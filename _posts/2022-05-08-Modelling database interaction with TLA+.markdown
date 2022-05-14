@@ -168,7 +168,7 @@ Spec == /\  Init /\ [][Next]_vars
         /\  ~[]<>(componentState["msg_sender"] = "failed" \/ componentState["stalledProcessFinder"] = "failed" \/ componentState["handleTimeOutTransactions"] = "failed")
 ```     
 
-We have used `strong fairness` only for the restore actions while we have `weak fairness` in the whole process for the 3 services. We have introduced also the fact that from a certain moment on there will be no errors. This for model that there will be an interval in time enough long for the system to process its data without errors. This works becouse our temporal property is of the simple form <>(A), it had been of the form <>[](A) or []<>(A) the assumption would have been too strong. In that cases a solution could be to introduce a notion of logical time and specify the spec with an interval of n instant of time. 
+We have used `strong fairness` only for the restore actions while we have `weak fairness` in the whole process for the 3 services. We have introduced also the fact that from a certain moment on there will be no errors. This for model that there will be an interval in time enough long for the system to process its data without errors. This works becouse our temporal property is of the simple form <>(A), it had been of the form <>[](A) or []<>(A) the assumption would have been too strong.
 
 Here we modeled the interaction with the database with transaction of isolation level `serializable`. What if you want to model other isolation levels?
 

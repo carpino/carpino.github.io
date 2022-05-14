@@ -22,7 +22,7 @@ title: Pietro Tollot Blog
 email: ptollot@icloud.com
 description: >- # this means to ignore newlines until "baseurl:"
   This blog want to be a collection of what i have learned working as a software developer and developing
-  my side projeects. I will write about backend software development, and in particular about distributed systems and formal methods.  
+  my side projects. I will write about backend software development, and in particular about distributed systems and formal methods.  
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username: ptollot

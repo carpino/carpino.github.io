@@ -7,7 +7,7 @@ tags:
     - networking
     - go
     - programming
-summary: We will see how to send and receive data over TCP using directly system calls, using the methods of the go's syscall package, that are implemented using the libc libraries of the OS provider...
+summary: We will see how to send and receive data over TCP using directly system calls, using the methods of the go's syscall package, that are implemented using the libc libraries...
 ---
 
 # TCP
@@ -19,7 +19,7 @@ TCP implements retransmission of the lost packets, for a number of times that ha
 
 Packets are properly sequenced, that means they arrive in the same sequence in which they are sent.
 
-TCP is implemented at kernel level in the OS and is used by the networking libraries through a serie of system calls, these system calls can be implemented in other languages like C by the OS provider so that the networking libraries of the language of reference has not to implement them themselves at low level. These calls are implemented typically in the `libc` libraries.
+TCP is implemented at kernel level in the OS and is used by the networking libraries through a serie of system calls, these system calls can be implemented in other languages like C so that the networking libraries of the languages of reference has not to implement them themselves at low level. These calls are implemented typically in the `libc` libraries.
 
 The main syscalls for using TCP are:
 
@@ -195,7 +195,7 @@ if err != nil {
 
 # Summary
 
-We have seen how to send and receive data over TCP using directly system calls, using the methods of the go's syscall package (that are implemented using the `libc` libraries of the OS provider).
+We have seen how to send and receive data over TCP using directly system calls, using the methods of the go's syscall package (that are implemented using the `libc` libraries).
 We have tried to give some more awareness in the use of the TCP stack.
 Hope you enjoied the article, if you want to either suggest some improvements or have an exhange please contact via `email` or via my `Twitter` profile. 
 

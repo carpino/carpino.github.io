@@ -7,14 +7,14 @@ categories: jekyll update
 
 # TCP
 
-Transmission Controll Protocol (TCP) is the most used connection oriented network protocol over IP. 
+`Transmission Controll Protocol` (TCP) is the most used connection oriented network protocol over IP. 
 Other than used directly, TCP is used also to implement other network protocols such as the widely known HTTP. 
 
 TCP implements retransmission of the lost packets, for a number of times that has a default of 15, with the possibility for the client to receive duplicate packets, but these duplicates are managed by the protocol in a way that is transparent to the user.
 
 Packets are properly sequenced, that means they arrive in the same sequence in which they are sent.
 
-TCP is implemented at kernel level in the OS and is used by the networking libraries through a serie of system calls, these system calls can be implemented in other languages like C by the OS provider so that the networking libraries of the language of reference has not to implement them themselves at low level.
+TCP is implemented at kernel level in the OS and is used by the networking libraries through a serie of system calls, these system calls can be implemented in other languages like C by the OS provider so that the networking libraries of the language of reference has not to implement them themselves at low level. These calls are implemented typically in the `libc` libraries.
 
 The main syscalls for using TCP are:
 
@@ -25,6 +25,7 @@ The main syscalls for using TCP are:
 * Connect 
 * Write
 * Read
+* Close
 
 #### Socket
 
@@ -65,12 +66,18 @@ At kernel level data are appended to a sending buffer and then sent onto the net
 
 Read bytes through the socket making at kernel level the specific calls for receiving data through the network, sending acks for received packets and copying received data from the socket buffer.
 
+#### Close
+
+Close or aborts any pending connection on the socket.
+At kernel level first check if the socket is in lisenting mode, if so traverse the queue and for each pendinc connection abort it.
+
+
 # Syscalls in GO
 
 The syscall package provides a mean to interact with the underlying operating system directly.
 However, it is essential to note that the syscall package is platform-specific, and some functions might not be available or behave differently across different platforms.
 
-For what regards at least the TCP calls, they are implemented in the syscall package under the hood with the use of the libc libraries.
+For what regards at least the TCP calls, they are implemented in the syscall package under the hood with the use of the `libc` libraries.
 `libc` is responsible for the mechanism of system calls to the OS implemented in low level code.
 
 For our purposes we will use the procedures:
@@ -82,6 +89,7 @@ For our purposes we will use the procedures:
 * `func syscall.Connect(fd int, sa syscall.Sockaddr) (err error)`
 * `func syscall.Write(fd int, p []byte) (n int, err error)`
 * `func syscall.Read(fd int, p []byte) (n int, err error)`
+* `func syscall.Close(fd int) (err error)`
 
 In particular the backlog parameter of the Listen procedure indicates the number of connection that can be put in the queue before beign ingored.
 
@@ -90,6 +98,8 @@ For all the procedures `fd` indicates a file descriptor.
 For the Socket procedure, `domain` indicates the address family, `type` the type of socket(TCP or UDP), and `proto` the underlaing protocol level IP.
 
 Based on the platform you are using you can receive an error in case the size of the  `p` parameter in  `Write` procedure is too big.
+
+To note that the TCP protocol is stream based, in this way there could not be an exact one to one corrispondence between the content of the `Write` and of the `Read` calls.
 
 # Example code
 
@@ -100,7 +110,7 @@ Here some example code using the previous described syscalls to send an hello me
 ```
 fd, err := syscall.Socket(syscall.AF_INET, syscall.SOCK_STREAM, syscall.IPPROTO_IP)
 if err != nil {
-        panic(err)
+	panic(err)
 }
 
 err = syscall.Bind(fd, &syscall.SockaddrInet4{Port: 8081, Addr: [4]byte{127, 0, 0, 1}})
@@ -113,13 +123,22 @@ if err != nil {
 	panic(err)
 }
 
-msg := "hello world"
-size, err := syscall.Write(fd, []byte(msg))
+size, err := syscall.Write(fd, []byte("hello "))
 if err != nil {
 	panic(err)
 }
-
 println("written bytes: ", size)
+
+size, err = syscall.Write(fd, []byte("world!"))
+if err != nil {
+	panic(err)
+}
+println("written bytes: ", size)
+
+err = syscall.Close(fd)
+if err != nil {
+	panic(err)
+}
 ```
 
 #### Server
@@ -145,14 +164,27 @@ if err != nil {
 	panic(err)
 }
 
-buf := make([]byte, 1024)
-size, err := syscall.Read(nfd, buf)
+buf := make([]byte, 4)
+size := 1
+totSize := 0
+for size > 0 {
+	size, err = syscall.Read(nfd, buf)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(string(buf[0:size]))
+	buf = make([]byte, 4)
+	totSize = totSize + size
+}
+
+fmt.Println()
+fmt.Println("Total size: ", totSize)
+
+err = syscall.Close(fd)
 if err != nil {
 	panic(err)
 }
-
-fmt.Println(size)
-fmt.Println(string(buf[0:size]))
 ```
 
 # Summary

@@ -1,13 +1,144 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.0">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2024-01-04T13:45:28+01:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">Tollot’s Blog</title><subtitle>This blog want to be a collection of what i have learned  both working as a software developer and developing my side projects. I will write about backend software development, and in particular about distributed systems and formal methods.  </subtitle><entry><title type="html">Communicating over TCP with system calls in Go</title><link href="http://localhost:4000/jekyll/update/2024/01/04/TCP-syscalls.html" rel="alternate" type="text/html" title="Communicating over TCP with system calls in Go" /><published>2024-01-04T10:00:00+01:00</published><updated>2024-01-04T10:00:00+01:00</updated><id>http://localhost:4000/jekyll/update/2024/01/04/TCP-syscalls</id><content type="html" xml:base="http://localhost:4000/jekyll/update/2024/01/04/TCP-syscalls.html">&lt;h1 id=&quot;tcp&quot;&gt;TCP&lt;/h1&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.0">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2024-01-04T16:43:27+01:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">Tollot’s Blog</title><subtitle>This blog want to be a collection of what i have learned  both working as a software developer and developing my side projects. I will write about backend software development, and in particular about distributed systems and formal methods.  </subtitle><entry><title type="html">Communicating over UDP with system calls in Go</title><link href="http://localhost:4000/jekyll/update/2024/01/04/UDO-syscalls.html" rel="alternate" type="text/html" title="Communicating over UDP with system calls in Go" /><published>2024-01-04T16:00:00+01:00</published><updated>2024-01-04T16:00:00+01:00</updated><id>http://localhost:4000/jekyll/update/2024/01/04/UDO-syscalls</id><content type="html" xml:base="http://localhost:4000/jekyll/update/2024/01/04/UDO-syscalls.html">&lt;h1 id=&quot;udp&quot;&gt;UDP&lt;/h1&gt;
 
-&lt;p&gt;Transmission Controll Protocol (TCP) is the most used connection oriented network protocol over IP. 
+&lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;User Datagram Protocol&lt;/code&gt; (UDP) is the most used connectionless protocol over IP. 
+Other than used directly, UDP is used to implement other network protocols such as in the field of audio-video streaming and VoIP.&lt;/p&gt;
+
+&lt;p&gt;UDP does not implements retransmission of the lost packets. In this way the packets have less guarantees to be delivered in case of networks errors if compared to TCP.&lt;/p&gt;
+
+&lt;p&gt;Packets are not properly sequenced, that means they could arrive in a different order respect to which they are sent.&lt;/p&gt;
+
+&lt;p&gt;UDP is implemented at kernel level in the OS and is used by the networking libraries through a serie of system calls, these system calls can be implemented in other languages like C by the OS provider so that the networking libraries of the language of reference has not to implement them themselves at low level. Typically these implementation are inside the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;libc&lt;/code&gt; libraries.&lt;/p&gt;
+
+&lt;p&gt;The main syscalls for using UDP are:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Socket&lt;/li&gt;
+  &lt;li&gt;Bind&lt;/li&gt;
+  &lt;li&gt;Sendto&lt;/li&gt;
+  &lt;li&gt;Recvfrom&lt;/li&gt;
+  &lt;li&gt;Close&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;socket&quot;&gt;Socket&lt;/h4&gt;
+
+&lt;p&gt;Create a new socket used in subsequent system calls. 
+In the kernel level is created a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Protocol Control Block&lt;/code&gt; (PCB) that will contain all the informations about the current connection.
+This is done through two calls, one for the allocation of the new PCB and one for its initialization.&lt;/p&gt;
+
+&lt;h4 id=&quot;bind&quot;&gt;Bind&lt;/h4&gt;
+
+&lt;p&gt;Bind a socket with a local transport network address, that is address and port. 
+The port can also be not defined, in that case an implicit lookup will be tried by the system.
+In case the port is already in use in the system by onehter socket, the bind will fail.&lt;/p&gt;
+
+&lt;h4 id=&quot;sendto&quot;&gt;Sendto&lt;/h4&gt;
+
+&lt;p&gt;Send an UDP datagram from the socket address and port to the destination socket. 
+Successful completion of a call does not guarantee delivery of the message. A return value of -1 indicates only locally-detected errors.
+If space is not available at the sending socket to hold the message to be transmitted it could block until space is available.&lt;/p&gt;
+
+&lt;h4 id=&quot;recvfrom&quot;&gt;Recvfrom&lt;/h4&gt;
+
+&lt;p&gt;Put the process in sleep until the kernel wake it up with a received UDP datagram along with the address of the UDP datagram sender.&lt;/p&gt;
+
+&lt;h4 id=&quot;close&quot;&gt;Close&lt;/h4&gt;
+
+&lt;p&gt;Free the local socket.&lt;/p&gt;
+
+&lt;h1 id=&quot;syscalls-in-go&quot;&gt;Syscalls in GO&lt;/h1&gt;
+
+&lt;p&gt;The syscall package provides a mean to interact with the underlying operating system directly.
+However, it is essential to note that the syscall package is platform-specific, and some functions might not be available or behave differently across different platforms.&lt;/p&gt;
+
+&lt;p&gt;For what regards at least the UDP calls, they are implemented in the syscall package under the hood with the use of the libc libraries.
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;libc&lt;/code&gt; is responsible for the mechanism of system calls to the OS implemented in low level code.&lt;/p&gt;
+
+&lt;p&gt;For our purposes we will use the procedures:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;func syscall.Socket(domain int, typ int, proto int) (fd int, err error)&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;func syscall.Bind(fd int, sa syscall.Sockaddr) (err error)&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;func syscall.Sendto(fd int, p []byte, flags int, to syscall.Sockaddr) (err error)&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;func syscall.Recvfrom(fd int, p []byte, flags int) (n int, from syscall.Sockaddr, err error)&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;func syscall.Close(fd int) (err error)&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;For all the procedures &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;fd&lt;/code&gt; indicates a file descriptor.&lt;/p&gt;
+
+&lt;p&gt;For the Socket procedure, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;domain&lt;/code&gt; indicates the address family, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;type&lt;/code&gt; the type of socket(TCP or UDP), and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;proto&lt;/code&gt; the underlaing protocol level IP.&lt;/p&gt;
+
+&lt;h1 id=&quot;example-code&quot;&gt;Example code&lt;/h1&gt;
+
+&lt;p&gt;Here some example code using the previous described syscalls to send an hello message from one socket to the other.&lt;/p&gt;
+
+&lt;h4 id=&quot;client&quot;&gt;Client&lt;/h4&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;fd, err := syscall.Socket(syscall.AF_INET, syscall.SOCK_DGRAM, syscall.IPPROTO_IP)
+if err != nil {
+	panic(err)
+}
+
+err = syscall.Bind(fd, &amp;amp;syscall.SockaddrInet4{Port: 8081, Addr: [4]byte{127, 0, 0, 1}})
+if err != nil {
+	panic(err)
+}
+
+err = syscall.Sendto(fd, []byte(&quot;hello world!&quot;), 0, &amp;amp;syscall.SockaddrInet4{Port: 8080, Addr: [4]byte{127, 0, 0, 1}})
+if err != nil {
+	panic(err)
+}
+
+err = syscall.Close(fd)
+if err != nil {
+	panic(err)
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h4 id=&quot;server&quot;&gt;Server&lt;/h4&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;fd, err := syscall.Socket(syscall.AF_INET, syscall.SOCK_DGRAM, syscall.IPPROTO_IP)
+if err != nil {
+	panic(err)
+}
+
+err = syscall.Bind(fd, &amp;amp;syscall.SockaddrInet4{Port: 8080, Addr: [4]byte{127, 0, 0, 1}})
+if err != nil {
+	panic(err)
+}
+
+msg := make([]byte, 1024)
+size, from, err := syscall.Recvfrom(fd, msg, 0)
+if err != nil {
+	panic(err)
+}
+
+fmt.Printf(&quot;size: %d, from: %v, err: %v\nmsg: %s\n&quot;, size, from, err, string(msg[0:size]))
+
+err = syscall.Close(fd)
+if err != nil {
+	panic(err)
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h1 id=&quot;summary&quot;&gt;Summary&lt;/h1&gt;
+
+&lt;p&gt;We have seen how to send and receive data over UDP using directly system calls, using the methods of the go’s syscall package (that are implemented using the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;libc&lt;/code&gt; libraries of the OS provider).
+We have tried to give some more awareness in the use of the UDP stack.
+Hope you enjoied the article, if you want to either suggest some improvements or have an exhange please contact via &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;email&lt;/code&gt; or via my &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Twitter&lt;/code&gt; profile.&lt;/p&gt;
+
+&lt;p&gt;References for this article:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://jameshfisher.com/2016/12/19/simple-udp-server&quot;&gt;jameshfisher simple udp server&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;</content><author><name></name></author><category term="jekyll" /><category term="update" /><summary type="html">UDP</summary></entry><entry><title type="html">Communicating over TCP with system calls in Go</title><link href="http://localhost:4000/jekyll/update/2024/01/04/TCP-syscalls.html" rel="alternate" type="text/html" title="Communicating over TCP with system calls in Go" /><published>2024-01-04T10:00:00+01:00</published><updated>2024-01-04T10:00:00+01:00</updated><id>http://localhost:4000/jekyll/update/2024/01/04/TCP-syscalls</id><content type="html" xml:base="http://localhost:4000/jekyll/update/2024/01/04/TCP-syscalls.html">&lt;h1 id=&quot;tcp&quot;&gt;TCP&lt;/h1&gt;
+
+&lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Transmission Controll Protocol&lt;/code&gt; (TCP) is the most used connection oriented network protocol over IP. 
 Other than used directly, TCP is used also to implement other network protocols such as the widely known HTTP.&lt;/p&gt;
 
 &lt;p&gt;TCP implements retransmission of the lost packets, for a number of times that has a default of 15, with the possibility for the client to receive duplicate packets, but these duplicates are managed by the protocol in a way that is transparent to the user.&lt;/p&gt;
 
 &lt;p&gt;Packets are properly sequenced, that means they arrive in the same sequence in which they are sent.&lt;/p&gt;
 
-&lt;p&gt;TCP is implemented at kernel level in the OS and is used by the networking libraries through a serie of system calls, these system calls can be implemented in other languages like C by the OS provider so that the networking libraries of the language of reference has not to implement them themselves at low level.&lt;/p&gt;
+&lt;p&gt;TCP is implemented at kernel level in the OS and is used by the networking libraries through a serie of system calls, these system calls can be implemented in other languages like C by the OS provider so that the networking libraries of the language of reference has not to implement them themselves at low level. These calls are implemented typically in the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;libc&lt;/code&gt; libraries.&lt;/p&gt;
 
 &lt;p&gt;The main syscalls for using TCP are:&lt;/p&gt;
 
@@ -19,6 +150,7 @@ Other than used directly, TCP is used also to implement other network protocols 
   &lt;li&gt;Connect&lt;/li&gt;
   &lt;li&gt;Write&lt;/li&gt;
   &lt;li&gt;Read&lt;/li&gt;
+  &lt;li&gt;Close&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;h4 id=&quot;socket&quot;&gt;Socket&lt;/h4&gt;
@@ -60,12 +192,17 @@ At kernel level data are appended to a sending buffer and then sent onto the net
 
 &lt;p&gt;Read bytes through the socket making at kernel level the specific calls for receiving data through the network, sending acks for received packets and copying received data from the socket buffer.&lt;/p&gt;
 
+&lt;h4 id=&quot;close&quot;&gt;Close&lt;/h4&gt;
+
+&lt;p&gt;Close or aborts any pending connection on the socket.
+At kernel level first check if the socket is in lisenting mode, if so traverse the queue and for each pendinc connection abort it.&lt;/p&gt;
+
 &lt;h1 id=&quot;syscalls-in-go&quot;&gt;Syscalls in GO&lt;/h1&gt;
 
 &lt;p&gt;The syscall package provides a mean to interact with the underlying operating system directly.
 However, it is essential to note that the syscall package is platform-specific, and some functions might not be available or behave differently across different platforms.&lt;/p&gt;
 
-&lt;p&gt;For what regards at least the TCP calls, they are implemented in the syscall package under the hood with the use of the libc libraries.
+&lt;p&gt;For what regards at least the TCP calls, they are implemented in the syscall package under the hood with the use of the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;libc&lt;/code&gt; libraries.
 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;libc&lt;/code&gt; is responsible for the mechanism of system calls to the OS implemented in low level code.&lt;/p&gt;
 
 &lt;p&gt;For our purposes we will use the procedures:&lt;/p&gt;
@@ -78,6 +215,7 @@ However, it is essential to note that the syscall package is platform-specific, 
   &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;func syscall.Connect(fd int, sa syscall.Sockaddr) (err error)&lt;/code&gt;&lt;/li&gt;
   &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;func syscall.Write(fd int, p []byte) (n int, err error)&lt;/code&gt;&lt;/li&gt;
   &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;func syscall.Read(fd int, p []byte) (n int, err error)&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;func syscall.Close(fd int) (err error)&lt;/code&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;p&gt;In particular the backlog parameter of the Listen procedure indicates the number of connection that can be put in the queue before beign ingored.&lt;/p&gt;
@@ -88,6 +226,8 @@ However, it is essential to note that the syscall package is platform-specific, 
 
 &lt;p&gt;Based on the platform you are using you can receive an error in case the size of the  &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;p&lt;/code&gt; parameter in  &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Write&lt;/code&gt; procedure is too big.&lt;/p&gt;
 
+&lt;p&gt;To note that the TCP protocol is stream based, in this way there could not be an exact one to one corrispondence between the content of the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Write&lt;/code&gt; and of the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Read&lt;/code&gt; calls.&lt;/p&gt;
+
 &lt;h1 id=&quot;example-code&quot;&gt;Example code&lt;/h1&gt;
 
 &lt;p&gt;Here some example code using the previous described syscalls to send an hello message from one socket to the other.&lt;/p&gt;
@@ -96,7 +236,7 @@ However, it is essential to note that the syscall package is platform-specific, 
 
 &lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;fd, err := syscall.Socket(syscall.AF_INET, syscall.SOCK_STREAM, syscall.IPPROTO_IP)
 if err != nil {
-        panic(err)
+	panic(err)
 }
 
 err = syscall.Bind(fd, &amp;amp;syscall.SockaddrInet4{Port: 8081, Addr: [4]byte{127, 0, 0, 1}})
@@ -109,13 +249,22 @@ if err != nil {
 	panic(err)
 }
 
-msg := &quot;hello world&quot;
-size, err := syscall.Write(fd, []byte(msg))
+size, err := syscall.Write(fd, []byte(&quot;hello &quot;))
 if err != nil {
 	panic(err)
 }
-
 println(&quot;written bytes: &quot;, size)
+
+size, err = syscall.Write(fd, []byte(&quot;world!&quot;))
+if err != nil {
+	panic(err)
+}
+println(&quot;written bytes: &quot;, size)
+
+err = syscall.Close(fd)
+if err != nil {
+	panic(err)
+}
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;h4 id=&quot;server&quot;&gt;Server&lt;/h4&gt;
@@ -140,14 +289,27 @@ if err != nil {
 	panic(err)
 }
 
-buf := make([]byte, 1024)
-size, err := syscall.Read(nfd, buf)
+buf := make([]byte, 4)
+size := 1
+totSize := 0
+for size &amp;gt; 0 {
+	size, err = syscall.Read(nfd, buf)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(string(buf[0:size]))
+	buf = make([]byte, 4)
+	totSize = totSize + size
+}
+
+fmt.Println()
+fmt.Println(&quot;Total size: &quot;, totSize)
+
+err = syscall.Close(fd)
 if err != nil {
 	panic(err)
 }
-
-fmt.Println(size)
-fmt.Println(string(buf[0:size]))
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;h1 id=&quot;summary&quot;&gt;Summary&lt;/h1&gt;

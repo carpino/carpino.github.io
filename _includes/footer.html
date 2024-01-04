@@ -1,0 +1,52 @@
+<footer class="site-footer">
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">{{ site.title }}</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col  footer-col-1">
+        <ul class="contact-list">
+          <li>&copy; Pietro Tollot</li>
+          <li style="font-size: 14px;">Build with <i class="fas fa-heart"></i> upon Jekyll and <i class="fab fa-github"></i></li>
+        </ul>
+      </div>
+
+      <div class="footer-col  footer-col-2">
+        <ul class="social-media-list">
+          {% if site.github_username %}
+          <li>
+            <a href="https://github.com/{{ site.github_username }}">
+              <i class="icon fab fa-github"></i>
+              <span class="username">{{ site.github_username }}</span>
+            </a>
+          </li>
+          {% endif %}
+
+          {% if site.twitter_username %}
+          <li>
+            <a href="https://twitter.com/{{ site.twitter_username }}">
+              <i class="icon fab fa-twitter"></i>
+              <span class="username">{{ site.twitter_username }}</span>
+            </a>
+          </li>
+          {% endif %}
+
+            {% if site.linkedin_username %}
+            <li>
+                <a href="https://www.linkedin.com/in/{{ site.linkedin_username }}">
+                  <i class="icon fab fa-linkedin"></i>
+                  <span class="username">{{ site.linkedin_username }}</span>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+      </div>
+
+      <div class="footer-col  footer-col-3">
+        <p class="text">{{ site.description }}</p>
+      </div>
+    </div>
+  </div>
+
+</footer>

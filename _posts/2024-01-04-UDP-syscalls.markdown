@@ -3,6 +3,11 @@ layout: post
 title:  "Communicating over UDP with system calls in Go"
 date:   2024-01-04 16:00:00 +0100
 categories: jekyll update
+tags:
+    - networking
+    - go
+    - programming
+summary: We will see how to send and receive data over UDP using directly system calls, using the methods of the go's syscall package, that are implemented using the libc libraries of the OS provider...
 ---
 
 # UDP
@@ -76,7 +81,7 @@ Here some example code using the previous described syscalls to send an hello me
 
 #### Client
 
-```
+{% highlight golang %}
 fd, err := syscall.Socket(syscall.AF_INET, syscall.SOCK_DGRAM, syscall.IPPROTO_IP)
 if err != nil {
 	panic(err)
@@ -96,11 +101,11 @@ err = syscall.Close(fd)
 if err != nil {
 	panic(err)
 }
-```
+{% endhighlight %}
 
 #### Server
 
-```
+{% highlight golang %}
 fd, err := syscall.Socket(syscall.AF_INET, syscall.SOCK_DGRAM, syscall.IPPROTO_IP)
 if err != nil {
 	panic(err)
@@ -123,7 +128,7 @@ err = syscall.Close(fd)
 if err != nil {
 	panic(err)
 }
-```
+{% endhighlight %}
 
 # Summary
 
@@ -131,7 +136,7 @@ We have seen how to send and receive data over UDP using directly system calls, 
 We have tried to give some more awareness in the use of the UDP stack.
 Hope you enjoied the article, if you want to either suggest some improvements or have an exhange please contact via `email` or via my `Twitter` profile. 
 
-References for this article:
+#### References
 * [jameshfisher simple udp server][jameshfisher-simple-udp-server]
 
 [jameshfisher-simple-udp-server]: https://jameshfisher.com/2016/12/19/simple-udp-server

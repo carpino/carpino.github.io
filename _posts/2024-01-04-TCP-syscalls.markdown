@@ -3,6 +3,11 @@ layout: post
 title:  "Communicating over TCP with system calls in Go"
 date:   2024-01-04 10:00:00 +0100
 categories: jekyll update
+tags:
+    - networking
+    - go
+    - programming
+summary: We will see how to send and receive data over TCP using directly system calls, using the methods of the go's syscall package, that are implemented using the libc libraries of the OS provider...
 ---
 
 # TCP
@@ -107,7 +112,7 @@ Here some example code using the previous described syscalls to send an hello me
 
 #### Client
 
-```
+{% highlight golang %}
 fd, err := syscall.Socket(syscall.AF_INET, syscall.SOCK_STREAM, syscall.IPPROTO_IP)
 if err != nil {
 	panic(err)
@@ -139,11 +144,12 @@ err = syscall.Close(fd)
 if err != nil {
 	panic(err)
 }
-```
+{% endhighlight %}
+
 
 #### Server
 
-```
+{% highlight golang %}
 fd, err := syscall.Socket(syscall.AF_INET, syscall.SOCK_STREAM, syscall.IPPROTO_IP)
 if err != nil {
 	panic(err)
@@ -185,7 +191,7 @@ err = syscall.Close(fd)
 if err != nil {
 	panic(err)
 }
-```
+{% endhighlight %}
 
 # Summary
 
@@ -193,7 +199,7 @@ We have seen how to send and receive data over TCP using directly system calls, 
 We have tried to give some more awareness in the use of the TCP stack.
 Hope you enjoied the article, if you want to either suggest some improvements or have an exhange please contact via `email` or via my `Twitter` profile. 
 
-References for this article:
+#### References
 * [IBM TCP syscalls][ibm-blog-tcp-syscalls]
 
 [ibm-blog-tcp-syscalls]: https://developer.ibm.com/articles/au-tcpsystemcalls

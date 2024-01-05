@@ -69,7 +69,7 @@ At kernel level data are appended to a sending buffer and then sent onto the net
 
 #### Read
 
-Read bytes through the socket making at kernel level the specific calls for receiving data through the network, sending acks for received packets and copying received data from the socket buffer.
+Read bytes through the socket copying them from the socket buffer. It can block the process if the buffer is empty, this happens if the socket is in blocking mode, usually the default. If the socket is set to non blocking, if the buffer is empty and a read is tryied an exception is rised. The management of the receiving part of the TCP protocol and the sensing of ACKs happend transparently to the user and is not triggered with a particular syscall receiver side.
 
 #### Close
 

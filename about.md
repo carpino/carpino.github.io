@@ -4,6 +4,4 @@ title: About
 permalink: /about/
 ---
 
-I am **Pietro**, I have been working as a backend software developer since September 2021, mainly in Java and Go.
-I have a BSc in computer science from the University of Padova and an Msc in computer science from the University of Pisa. My main interests are distributed systems and formal methods to verify them. In my free time it happened to me to do some model checking with TLA+ and the TLC model checker. 
-
+I am **Pietro**, a software developer, born in 1993 in a small village of the Dolomites in northern Italy, who has developed a passion for running and mountain sports, in particular mountain running. Even though i have had my antidepressants intake daily since 2019, in 2026 i have understood sport will be an important part of my future life, and i would like to achieve what i can through the joining to trail running and biking events. I have also a natural passion for hiking and mountain trips.

@@ -2,9 +2,8 @@
 title: Tollot's Mountain Blog
 email: ptollot@icloud.com
 description: > # this means to ignore newlines until "baseurl:"
-  This blog is a collection of sportive and outdoor experiences and their way to them. I will also share on
-  mountain hiking and any other activity or consideration regarding mountain sports and outdoor activities 
-  that I will consider appropriate.  
+  This blog is a collection of my sportive and outdoor experiences. I will also be sharing my training 
+  for them. You can also find articles on mountain hiking or other related activities.  
 baseurl: "" # the subpath of your site, e.g. /blog/
 url: "https://carpino.github.io" # the base hostname & protocol for your site
 instagram: "@pietrotollot"

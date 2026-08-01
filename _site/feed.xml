@@ -1,321 +1,321 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.0">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2024-01-04T19:49:49+01:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">Tollot’s Blog</title><subtitle>This blog want to be a collection of what i have learned  both working as a software developer and developing my side projects. I will write about backend software development, and in particular about distributed systems and formal methods.  
-</subtitle><entry><title type="html">Communicating over UDP with system calls in Go</title><link href="http://localhost:4000/jekyll/update/2024/01/04/UDP-syscalls.html" rel="alternate" type="text/html" title="Communicating over UDP with system calls in Go" /><published>2024-01-04T16:00:00+01:00</published><updated>2024-01-04T16:00:00+01:00</updated><id>http://localhost:4000/jekyll/update/2024/01/04/UDP-syscalls</id><content type="html" xml:base="http://localhost:4000/jekyll/update/2024/01/04/UDP-syscalls.html">&lt;h1 id=&quot;udp&quot;&gt;UDP&lt;/h1&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.4">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2026-08-01T10:16:45+02:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">Tollot’s Blog</title><subtitle>This blog want to be a collection of what i have learned  both working as a software developer and developing my side projects. I will write about backend software development, and in particular about distributed systems and formal methods.  
+</subtitle><entry><title type="html">Communicating over UDP with system calls in Go</title><link href="http://localhost:4000/jekyll/update/2024/01/04/UDP-syscalls.html" rel="alternate" type="text/html" title="Communicating over UDP with system calls in Go" /><published>2024-01-04T16:00:00+01:00</published><updated>2024-01-04T16:00:00+01:00</updated><id>http://localhost:4000/jekyll/update/2024/01/04/UDP-syscalls</id><content type="html" xml:base="http://localhost:4000/jekyll/update/2024/01/04/UDP-syscalls.html"><![CDATA[<h1 id="udp">UDP</h1>
 
-&lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;User Datagram Protocol&lt;/code&gt; (UDP) is the most used connectionless protocol over IP. 
-Other than used directly, UDP is used to implement other network protocols such as in the field of audio-video streaming and VoIP.&lt;/p&gt;
+<p><code class="language-plaintext highlighter-rouge">User Datagram Protocol</code> (UDP) is the most used connectionless protocol over IP. 
+Other than used directly, UDP is used to implement other network protocols such as in the field of audio-video streaming and VoIP.</p>
 
-&lt;p&gt;UDP does not implements retransmission of the lost packets. In this way the packets have less guarantees to be delivered in case of networks errors if compared to TCP.&lt;/p&gt;
+<p>UDP does not implements retransmission of the lost packets. In this way the packets have less guarantees to be delivered in case of networks errors if compared to TCP.</p>
 
-&lt;p&gt;Packets are not properly sequenced, that means they could arrive in a different order respect to which they are sent.&lt;/p&gt;
+<p>Packets are not properly sequenced, that means they could arrive in a different order respect to which they are sent.</p>
 
-&lt;p&gt;UDP is implemented at kernel level in the OS and is used by the networking libraries through a serie of system calls, these system calls can be implemented in other languages like C by the OS provider so that the networking libraries of the language of reference has not to implement them themselves at low level. Typically these implementation are inside the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;libc&lt;/code&gt; libraries.&lt;/p&gt;
+<p>UDP is implemented at kernel level in the OS and is used by the networking libraries through a serie of system calls, these system calls can be implemented in other languages like C so that the networking libraries of the different languages of reference has not to implement them themselves at low level. Typically these implementation are inside the <code class="language-plaintext highlighter-rouge">libc</code> libraries.</p>
 
-&lt;p&gt;The main syscalls for using UDP are:&lt;/p&gt;
+<p>The main syscalls for using UDP are:</p>
 
-&lt;ul&gt;
-  &lt;li&gt;Socket&lt;/li&gt;
-  &lt;li&gt;Bind&lt;/li&gt;
-  &lt;li&gt;Sendto&lt;/li&gt;
-  &lt;li&gt;Recvfrom&lt;/li&gt;
-  &lt;li&gt;Close&lt;/li&gt;
-&lt;/ul&gt;
+<ul>
+  <li>Socket</li>
+  <li>Bind</li>
+  <li>Sendto</li>
+  <li>Recvfrom</li>
+  <li>Close</li>
+</ul>
 
-&lt;h4 id=&quot;socket&quot;&gt;Socket&lt;/h4&gt;
+<h4 id="socket">Socket</h4>
 
-&lt;p&gt;Create a new socket used in subsequent system calls. 
-In the kernel level is created a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Protocol Control Block&lt;/code&gt; (PCB) that will contain all the informations about the current connection.
-This is done through two calls, one for the allocation of the new PCB and one for its initialization.&lt;/p&gt;
+<p>Create a new socket used in subsequent system calls. 
+In the kernel level is created a <code class="language-plaintext highlighter-rouge">Protocol Control Block</code> (PCB) that will contain all the informations about the current connection.
+This is done through two calls, one for the allocation of the new PCB and one for its initialization.</p>
 
-&lt;h4 id=&quot;bind&quot;&gt;Bind&lt;/h4&gt;
+<h4 id="bind">Bind</h4>
 
-&lt;p&gt;Bind a socket with a local transport network address, that is address and port. 
+<p>Bind a socket with a local transport network address, that is address and port. 
 The port can also be not defined, in that case an implicit lookup will be tried by the system.
-In case the port is already in use in the system by onehter socket, the bind will fail.&lt;/p&gt;
+In case the port is already in use in the system by onehter socket, the bind will fail.</p>
 
-&lt;h4 id=&quot;sendto&quot;&gt;Sendto&lt;/h4&gt;
+<h4 id="sendto">Sendto</h4>
 
-&lt;p&gt;Send an UDP datagram from the socket address and port to the destination socket. 
+<p>Send an UDP datagram from the socket address and port to the destination socket. 
 Successful completion of a call does not guarantee delivery of the message. A return value of -1 indicates only locally-detected errors.
-If space is not available at the sending socket to hold the message to be transmitted it could block until space is available.&lt;/p&gt;
+If space is not available at the sending socket to hold the message to be transmitted it could block until space is available.</p>
 
-&lt;h4 id=&quot;recvfrom&quot;&gt;Recvfrom&lt;/h4&gt;
+<h4 id="recvfrom">Recvfrom</h4>
 
-&lt;p&gt;Put the process in sleep until the kernel wake it up with a received UDP datagram along with the address of the UDP datagram sender.&lt;/p&gt;
+<p>Put the process in sleep until the kernel wake it up with a received UDP datagram along with the address of the UDP datagram sender.</p>
 
-&lt;h4 id=&quot;close&quot;&gt;Close&lt;/h4&gt;
+<h4 id="close">Close</h4>
 
-&lt;p&gt;Free the local socket.&lt;/p&gt;
+<p>Free the local socket.</p>
 
-&lt;h1 id=&quot;syscalls-in-go&quot;&gt;Syscalls in GO&lt;/h1&gt;
+<h1 id="syscalls-in-go">Syscalls in GO</h1>
 
-&lt;p&gt;The syscall package provides a mean to interact with the underlying operating system directly.
-However, it is essential to note that the syscall package is platform-specific, and some functions might not be available or behave differently across different platforms.&lt;/p&gt;
+<p>The syscall package provides a mean to interact with the underlying operating system directly.
+However, it is essential to note that the syscall package is platform-specific, and some functions might not be available or behave differently across different platforms.</p>
 
-&lt;p&gt;For what regards at least the UDP calls, they are implemented in the syscall package under the hood with the use of the libc libraries.
-&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;libc&lt;/code&gt; is responsible for the mechanism of system calls to the OS implemented in low level code.&lt;/p&gt;
+<p>For what regards at least the UDP calls, they are implemented in the syscall package under the hood with the use of the libc libraries.
+<code class="language-plaintext highlighter-rouge">libc</code> is responsible for the mechanism of system calls to the OS implemented in low level code.</p>
 
-&lt;p&gt;For our purposes we will use the procedures:&lt;/p&gt;
+<p>For our purposes we will use the procedures:</p>
 
-&lt;ul&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;func syscall.Socket(domain int, typ int, proto int) (fd int, err error)&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;func syscall.Bind(fd int, sa syscall.Sockaddr) (err error)&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;func syscall.Sendto(fd int, p []byte, flags int, to syscall.Sockaddr) (err error)&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;func syscall.Recvfrom(fd int, p []byte, flags int) (n int, from syscall.Sockaddr, err error)&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;func syscall.Close(fd int) (err error)&lt;/code&gt;&lt;/li&gt;
-&lt;/ul&gt;
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">func syscall.Socket(domain int, typ int, proto int) (fd int, err error)</code></li>
+  <li><code class="language-plaintext highlighter-rouge">func syscall.Bind(fd int, sa syscall.Sockaddr) (err error)</code></li>
+  <li><code class="language-plaintext highlighter-rouge">func syscall.Sendto(fd int, p []byte, flags int, to syscall.Sockaddr) (err error)</code></li>
+  <li><code class="language-plaintext highlighter-rouge">func syscall.Recvfrom(fd int, p []byte, flags int) (n int, from syscall.Sockaddr, err error)</code></li>
+  <li><code class="language-plaintext highlighter-rouge">func syscall.Close(fd int) (err error)</code></li>
+</ul>
 
-&lt;p&gt;For all the procedures &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;fd&lt;/code&gt; indicates a file descriptor.&lt;/p&gt;
+<p>For all the procedures <code class="language-plaintext highlighter-rouge">fd</code> indicates a file descriptor.</p>
 
-&lt;p&gt;For the Socket procedure, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;domain&lt;/code&gt; indicates the address family, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;type&lt;/code&gt; the type of socket(TCP or UDP), and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;proto&lt;/code&gt; the underlaing protocol level IP.&lt;/p&gt;
+<p>For the Socket procedure, <code class="language-plaintext highlighter-rouge">domain</code> indicates the address family, <code class="language-plaintext highlighter-rouge">type</code> the type of socket(TCP or UDP), and <code class="language-plaintext highlighter-rouge">proto</code> the underlaing protocol level IP.</p>
 
-&lt;h1 id=&quot;example-code&quot;&gt;Example code&lt;/h1&gt;
+<h1 id="example-code">Example code</h1>
 
-&lt;p&gt;Here some example code using the previous described syscalls to send an hello message from one socket to the other.&lt;/p&gt;
+<p>Here some example code using the previous described syscalls to send an hello message from one socket to the other.</p>
 
-&lt;h4 id=&quot;client&quot;&gt;Client&lt;/h4&gt;
+<h4 id="client">Client</h4>
 
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-golang&quot; data-lang=&quot;golang&quot;&gt;&lt;span class=&quot;n&quot;&gt;fd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;syscall&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Socket&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;syscall&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AF_INET&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;syscall&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;SOCK_DGRAM&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;syscall&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;IPPROTO_IP&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;nil&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-	&lt;span class=&quot;nb&quot;&gt;panic&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;err&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+<figure class="highlight"><pre><code class="language-golang" data-lang="golang"><span class="n">fd</span><span class="p">,</span> <span class="n">err</span> <span class="o">:=</span> <span class="n">syscall</span><span class="o">.</span><span class="n">Socket</span><span class="p">(</span><span class="n">syscall</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">syscall</span><span class="o">.</span><span class="n">SOCK_DGRAM</span><span class="p">,</span> <span class="n">syscall</span><span class="o">.</span><span class="n">IPPROTO_IP</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+	<span class="nb">panic</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+<span class="p">}</span>
 
-&lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;syscall&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Bind&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;fd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;syscall&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;SockaddrInet4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Port&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;8081&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Addr&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;byte&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;127&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}})&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;nil&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-	&lt;span class=&quot;nb&quot;&gt;panic&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;err&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+<span class="n">err</span> <span class="o">=</span> <span class="n">syscall</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">syscall</span><span class="o">.</span><span class="n">SockaddrInet4</span><span class="p">{</span><span class="n">Port</span><span class="o">:</span> <span class="m">8081</span><span class="p">,</span> <span class="n">Addr</span><span class="o">:</span> <span class="p">[</span><span class="m">4</span><span class="p">]</span><span class="kt">byte</span><span class="p">{</span><span class="m">127</span><span class="p">,</span> <span class="m">0</span><span class="p">,</span> <span class="m">0</span><span class="p">,</span> <span class="m">1</span><span class="p">}})</span>
+<span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+	<span class="nb">panic</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+<span class="p">}</span>
 
-&lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;syscall&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Sendto&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;fd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[]&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;byte&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;hello world!&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;syscall&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;SockaddrInet4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Port&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;8080&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Addr&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;byte&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;127&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}})&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;nil&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-	&lt;span class=&quot;nb&quot;&gt;panic&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;err&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+<span class="n">err</span> <span class="o">=</span> <span class="n">syscall</span><span class="o">.</span><span class="n">Sendto</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">(</span><span class="s">"hello world!"</span><span class="p">),</span> <span class="m">0</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">syscall</span><span class="o">.</span><span class="n">SockaddrInet4</span><span class="p">{</span><span class="n">Port</span><span class="o">:</span> <span class="m">8080</span><span class="p">,</span> <span class="n">Addr</span><span class="o">:</span> <span class="p">[</span><span class="m">4</span><span class="p">]</span><span class="kt">byte</span><span class="p">{</span><span class="m">127</span><span class="p">,</span> <span class="m">0</span><span class="p">,</span> <span class="m">0</span><span class="p">,</span> <span class="m">1</span><span class="p">}})</span>
+<span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+	<span class="nb">panic</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+<span class="p">}</span>
 
-&lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;syscall&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Close&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;fd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;nil&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-	&lt;span class=&quot;nb&quot;&gt;panic&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;err&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+<span class="n">err</span> <span class="o">=</span> <span class="n">syscall</span><span class="o">.</span><span class="n">Close</span><span class="p">(</span><span class="n">fd</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+	<span class="nb">panic</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+<span class="p">}</span></code></pre></figure>
 
-&lt;h4 id=&quot;server&quot;&gt;Server&lt;/h4&gt;
+<h4 id="server">Server</h4>
 
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-golang&quot; data-lang=&quot;golang&quot;&gt;&lt;span class=&quot;n&quot;&gt;fd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;syscall&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Socket&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;syscall&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AF_INET&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;syscall&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;SOCK_DGRAM&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;syscall&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;IPPROTO_IP&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;nil&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-	&lt;span class=&quot;nb&quot;&gt;panic&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;err&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+<figure class="highlight"><pre><code class="language-golang" data-lang="golang"><span class="n">fd</span><span class="p">,</span> <span class="n">err</span> <span class="o">:=</span> <span class="n">syscall</span><span class="o">.</span><span class="n">Socket</span><span class="p">(</span><span class="n">syscall</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">syscall</span><span class="o">.</span><span class="n">SOCK_DGRAM</span><span class="p">,</span> <span class="n">syscall</span><span class="o">.</span><span class="n">IPPROTO_IP</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+	<span class="nb">panic</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+<span class="p">}</span>
 
-&lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;syscall&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Bind&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;fd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;syscall&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;SockaddrInet4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Port&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;8080&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Addr&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;byte&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;127&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}})&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;nil&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-	&lt;span class=&quot;nb&quot;&gt;panic&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;err&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+<span class="n">err</span> <span class="o">=</span> <span class="n">syscall</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">syscall</span><span class="o">.</span><span class="n">SockaddrInet4</span><span class="p">{</span><span class="n">Port</span><span class="o">:</span> <span class="m">8080</span><span class="p">,</span> <span class="n">Addr</span><span class="o">:</span> <span class="p">[</span><span class="m">4</span><span class="p">]</span><span class="kt">byte</span><span class="p">{</span><span class="m">127</span><span class="p">,</span> <span class="m">0</span><span class="p">,</span> <span class="m">0</span><span class="p">,</span> <span class="m">1</span><span class="p">}})</span>
+<span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+	<span class="nb">panic</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+<span class="p">}</span>
 
-&lt;span class=&quot;n&quot;&gt;msg&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;make&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;([]&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;byte&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;1024&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;size&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;from&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;syscall&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Recvfrom&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;fd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;msg&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;nil&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-	&lt;span class=&quot;nb&quot;&gt;panic&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;err&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+<span class="n">msg</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">([]</span><span class="kt">byte</span><span class="p">,</span> <span class="m">1024</span><span class="p">)</span>
+<span class="n">size</span><span class="p">,</span> <span class="n">from</span><span class="p">,</span> <span class="n">err</span> <span class="o">:=</span> <span class="n">syscall</span><span class="o">.</span><span class="n">Recvfrom</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="m">0</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+	<span class="nb">panic</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+<span class="p">}</span>
 
-&lt;span class=&quot;n&quot;&gt;fmt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Printf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;size: %d, from: %v, err: %v&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;msg: %s&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;size&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;from&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;msg&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;size&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]))&lt;/span&gt;
+<span class="n">fmt</span><span class="o">.</span><span class="n">Printf</span><span class="p">(</span><span class="s">"size: %d, from: %v, err: %v</span><span class="se">\n</span><span class="s">msg: %s</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">from</span><span class="p">,</span> <span class="n">err</span><span class="p">,</span> <span class="kt">string</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="m">0</span><span class="o">:</span><span class="n">size</span><span class="p">]))</span>
 
-&lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;syscall&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Close&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;fd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;nil&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-	&lt;span class=&quot;nb&quot;&gt;panic&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;err&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+<span class="n">err</span> <span class="o">=</span> <span class="n">syscall</span><span class="o">.</span><span class="n">Close</span><span class="p">(</span><span class="n">fd</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+	<span class="nb">panic</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+<span class="p">}</span></code></pre></figure>
 
-&lt;h1 id=&quot;summary&quot;&gt;Summary&lt;/h1&gt;
+<h1 id="summary">Summary</h1>
 
-&lt;p&gt;We have seen how to send and receive data over UDP using directly system calls, using the methods of the go’s syscall package (that are implemented using the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;libc&lt;/code&gt; libraries of the OS provider).
+<p>We have seen how to send and receive data over UDP using directly system calls, using the methods of the go’s syscall package (that are implemented using the <code class="language-plaintext highlighter-rouge">libc</code> libraries).
 We have tried to give some more awareness in the use of the UDP stack.
-Hope you enjoied the article, if you want to either suggest some improvements or have an exhange please contact via &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;email&lt;/code&gt; or via my &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Twitter&lt;/code&gt; profile.&lt;/p&gt;
+Hope you enjoied the article, if you want to either suggest some improvements or have an exhange please contact via <code class="language-plaintext highlighter-rouge">email</code> or via my <code class="language-plaintext highlighter-rouge">Twitter</code> profile.</p>
 
-&lt;h4 id=&quot;references&quot;&gt;References&lt;/h4&gt;
-&lt;ul&gt;
-  &lt;li&gt;&lt;a href=&quot;https://jameshfisher.com/2016/12/19/simple-udp-server&quot;&gt;jameshfisher simple udp server&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;</content><author><name></name></author><category term="jekyll" /><category term="update" /><category term="networking" /><category term="go" /><category term="programming" /><summary type="html">UDP</summary></entry><entry><title type="html">Communicating over TCP with system calls in Go</title><link href="http://localhost:4000/jekyll/update/2024/01/04/TCP-syscalls.html" rel="alternate" type="text/html" title="Communicating over TCP with system calls in Go" /><published>2024-01-04T10:00:00+01:00</published><updated>2024-01-04T10:00:00+01:00</updated><id>http://localhost:4000/jekyll/update/2024/01/04/TCP-syscalls</id><content type="html" xml:base="http://localhost:4000/jekyll/update/2024/01/04/TCP-syscalls.html">&lt;h1 id=&quot;tcp&quot;&gt;TCP&lt;/h1&gt;
+<h4 id="references">References</h4>
+<ul>
+  <li><a href="https://jameshfisher.com/2016/12/19/simple-udp-server">jameshfisher simple udp server</a></li>
+</ul>]]></content><author><name></name></author><category term="jekyll" /><category term="update" /><category term="networking" /><category term="go" /><category term="programming" /><summary type="html"><![CDATA[UDP]]></summary></entry><entry><title type="html">Communicating over TCP with system calls in Go</title><link href="http://localhost:4000/jekyll/update/2024/01/04/TCP-syscalls.html" rel="alternate" type="text/html" title="Communicating over TCP with system calls in Go" /><published>2024-01-04T10:00:00+01:00</published><updated>2024-01-04T10:00:00+01:00</updated><id>http://localhost:4000/jekyll/update/2024/01/04/TCP-syscalls</id><content type="html" xml:base="http://localhost:4000/jekyll/update/2024/01/04/TCP-syscalls.html"><![CDATA[<h1 id="tcp">TCP</h1>
 
-&lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Transmission Controll Protocol&lt;/code&gt; (TCP) is the most used connection oriented network protocol over IP. 
-Other than used directly, TCP is used also to implement other network protocols such as the widely known HTTP.&lt;/p&gt;
+<p><code class="language-plaintext highlighter-rouge">Transmission Controll Protocol</code> (TCP) is the most used connection oriented network protocol over IP. 
+Other than used directly, TCP is used also to implement other network protocols such as the widely known HTTP.</p>
 
-&lt;p&gt;TCP implements retransmission of the lost packets, for a number of times that has a default of 15, with the possibility for the client to receive duplicate packets, but these duplicates are managed by the protocol in a way that is transparent to the user.&lt;/p&gt;
+<p>TCP implements retransmission of the lost packets, for a number of times that has a default of 15, with the possibility for the client to receive duplicate packets, but these duplicates are managed by the protocol in a way that is transparent to the user.</p>
 
-&lt;p&gt;Packets are properly sequenced, that means they arrive in the same sequence in which they are sent.&lt;/p&gt;
+<p>Packets are properly sequenced, that means they arrive in the same sequence in which they are sent.</p>
 
-&lt;p&gt;TCP is implemented at kernel level in the OS and is used by the networking libraries through a serie of system calls, these system calls can be implemented in other languages like C by the OS provider so that the networking libraries of the language of reference has not to implement them themselves at low level. These calls are implemented typically in the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;libc&lt;/code&gt; libraries.&lt;/p&gt;
+<p>TCP is implemented at kernel level in the OS and is used by the networking libraries through a serie of system calls, these system calls can be implemented in other languages like C so that the networking libraries of the languages of reference has not to implement them themselves at low level. These calls are implemented typically in the <code class="language-plaintext highlighter-rouge">libc</code> libraries.</p>
 
-&lt;p&gt;The main syscalls for using TCP are:&lt;/p&gt;
+<p>The main syscalls for using TCP are:</p>
 
-&lt;ul&gt;
-  &lt;li&gt;Socket&lt;/li&gt;
-  &lt;li&gt;Bind&lt;/li&gt;
-  &lt;li&gt;Listen&lt;/li&gt;
-  &lt;li&gt;Accept&lt;/li&gt;
-  &lt;li&gt;Connect&lt;/li&gt;
-  &lt;li&gt;Write&lt;/li&gt;
-  &lt;li&gt;Read&lt;/li&gt;
-  &lt;li&gt;Close&lt;/li&gt;
-&lt;/ul&gt;
+<ul>
+  <li>Socket</li>
+  <li>Bind</li>
+  <li>Listen</li>
+  <li>Accept</li>
+  <li>Connect</li>
+  <li>Write</li>
+  <li>Read</li>
+  <li>Close</li>
+</ul>
 
-&lt;h4 id=&quot;socket&quot;&gt;Socket&lt;/h4&gt;
+<h4 id="socket">Socket</h4>
 
-&lt;p&gt;Create a new socket used in subsequent system calls. 
-In the kernel level is created a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Protocol Control Block&lt;/code&gt; (PCB) that will contain all the informations about the current connection.
-This is done through two calls, one for the allocation of the new PCB and one for its initialization.&lt;/p&gt;
+<p>Create a new socket used in subsequent system calls. 
+In the kernel level is created a <code class="language-plaintext highlighter-rouge">Protocol Control Block</code> (PCB) that will contain all the informations about the current connection.
+This is done through two calls, one for the allocation of the new PCB and one for its initialization.</p>
 
-&lt;h4 id=&quot;bind&quot;&gt;Bind&lt;/h4&gt;
+<h4 id="bind">Bind</h4>
 
-&lt;p&gt;Bind a socket with a local transport network address, that is address and port. 
+<p>Bind a socket with a local transport network address, that is address and port. 
 The port can also be not defined, in that case an implicit lookup will be tried by the system.
-In case the port is already in use in the system by onehter socket, the bind will fail.&lt;/p&gt;
+In case the port is already in use in the system by onehter socket, the bind will fail.</p>
 
-&lt;h4 id=&quot;listen&quot;&gt;Listen&lt;/h4&gt;
+<h4 id="listen">Listen</h4>
 
-&lt;p&gt;Indicates to the protocol that the server process is ready to accept new incoming connections on the socket. 
+<p>Indicates to the protocol that the server process is ready to accept new incoming connections on the socket. 
 It also indicates the number of connactions that can be queued, after which any further connection requests are ignored.
-In the kernel level the call set the socket to listen state.&lt;/p&gt;
+In the kernel level the call set the socket to listen state.</p>
 
-&lt;h4 id=&quot;accept&quot;&gt;Accept&lt;/h4&gt;
+<h4 id="accept">Accept</h4>
 
-&lt;p&gt;Blocking call that waits for incoming connections. 
+<p>Blocking call that waits for incoming connections. 
 At incoming connection, a new socket descriptor is returned. 
 This new socket is connected to the client and the previous socket remains in LISTEN state.
-At kernel level when a new connection arrives, it wake up the server process passing it the new connection after have checked for socket errors tah mya have occured in the meantime.&lt;/p&gt;
+At kernel level when a new connection arrives, it wake up the server process passing it the new connection after have checked for socket errors tah mya have occured in the meantime.</p>
 
-&lt;h4 id=&quot;connect&quot;&gt;Connect&lt;/h4&gt;
+<h4 id="connect">Connect</h4>
 
-&lt;p&gt;Used by the client process to connect to the server address through &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;3-way tcp handshake&lt;/code&gt;.&lt;/p&gt;
+<p>Used by the client process to connect to the server address through <code class="language-plaintext highlighter-rouge">3-way tcp handshake</code>.</p>
 
-&lt;h4 id=&quot;write&quot;&gt;Write&lt;/h4&gt;
+<h4 id="write">Write</h4>
 
-&lt;p&gt;Send bytes through the socket making at kernel level the specific call for sending data through the network.
+<p>Send bytes through the socket making at kernel level the specific call for sending data through the network.
 If the message is too large to live in a single packet (64K) it is decomposed in multiple packets in a way that is transparent to the user.
-At kernel level data are appended to a sending buffer and then sent onto the network interface.&lt;/p&gt;
+At kernel level data are appended to a sending buffer and then sent onto the network interface.</p>
 
-&lt;h4 id=&quot;read&quot;&gt;Read&lt;/h4&gt;
+<h4 id="read">Read</h4>
 
-&lt;p&gt;Read bytes through the socket making at kernel level the specific calls for receiving data through the network, sending acks for received packets and copying received data from the socket buffer.&lt;/p&gt;
+<p>Read bytes through the socket copying them from the socket buffer. It can block the process if the buffer is empty, this happens if the socket is in blocking mode, usually the default. If the socket is set to non blocking, if the buffer is empty and a read is tryied an exception is rised. The management of the receiving part of the TCP protocol and the sensing of ACKs happend transparently to the user and is not triggered with a particular syscall receiver side.</p>
 
-&lt;h4 id=&quot;close&quot;&gt;Close&lt;/h4&gt;
+<h4 id="close">Close</h4>
 
-&lt;p&gt;Close or aborts any pending connection on the socket.
-At kernel level first check if the socket is in lisenting mode, if so traverse the queue and for each pendinc connection abort it.&lt;/p&gt;
+<p>Close or aborts any pending connection on the socket.
+At kernel level first check if the socket is in lisenting mode, if so traverse the queue and for each pendinc connection abort it.</p>
 
-&lt;h1 id=&quot;syscalls-in-go&quot;&gt;Syscalls in GO&lt;/h1&gt;
+<h1 id="syscalls-in-go">Syscalls in GO</h1>
 
-&lt;p&gt;The syscall package provides a mean to interact with the underlying operating system directly.
-However, it is essential to note that the syscall package is platform-specific, and some functions might not be available or behave differently across different platforms.&lt;/p&gt;
+<p>The syscall package provides a mean to interact with the underlying operating system directly.
+However, it is essential to note that the syscall package is platform-specific, and some functions might not be available or behave differently across different platforms.</p>
 
-&lt;p&gt;For what regards at least the TCP calls, they are implemented in the syscall package under the hood with the use of the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;libc&lt;/code&gt; libraries.
-&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;libc&lt;/code&gt; is responsible for the mechanism of system calls to the OS implemented in low level code.&lt;/p&gt;
+<p>For what regards at least the TCP calls, they are implemented in the syscall package under the hood with the use of the <code class="language-plaintext highlighter-rouge">libc</code> libraries.
+<code class="language-plaintext highlighter-rouge">libc</code> is responsible for the mechanism of system calls to the OS implemented in low level code.</p>
 
-&lt;p&gt;For our purposes we will use the procedures:&lt;/p&gt;
+<p>For our purposes we will use the procedures:</p>
 
-&lt;ul&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;func syscall.Socket(domain int, typ int, proto int) (fd int, err error)&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;func syscall.Bind(fd int, sa syscall.Sockaddr) (err error)&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;func syscall.Listen(s int, backlog int) (err error)&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;func syscall.Accept(fd int) (nfd int, sa syscall.Sockaddr, err error)&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;func syscall.Connect(fd int, sa syscall.Sockaddr) (err error)&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;func syscall.Write(fd int, p []byte) (n int, err error)&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;func syscall.Read(fd int, p []byte) (n int, err error)&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;func syscall.Close(fd int) (err error)&lt;/code&gt;&lt;/li&gt;
-&lt;/ul&gt;
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">func syscall.Socket(domain int, typ int, proto int) (fd int, err error)</code></li>
+  <li><code class="language-plaintext highlighter-rouge">func syscall.Bind(fd int, sa syscall.Sockaddr) (err error)</code></li>
+  <li><code class="language-plaintext highlighter-rouge">func syscall.Listen(s int, backlog int) (err error)</code></li>
+  <li><code class="language-plaintext highlighter-rouge">func syscall.Accept(fd int) (nfd int, sa syscall.Sockaddr, err error)</code></li>
+  <li><code class="language-plaintext highlighter-rouge">func syscall.Connect(fd int, sa syscall.Sockaddr) (err error)</code></li>
+  <li><code class="language-plaintext highlighter-rouge">func syscall.Write(fd int, p []byte) (n int, err error)</code></li>
+  <li><code class="language-plaintext highlighter-rouge">func syscall.Read(fd int, p []byte) (n int, err error)</code></li>
+  <li><code class="language-plaintext highlighter-rouge">func syscall.Close(fd int) (err error)</code></li>
+</ul>
 
-&lt;p&gt;In particular the backlog parameter of the Listen procedure indicates the number of connection that can be put in the queue before beign ingored.&lt;/p&gt;
+<p>In particular the backlog parameter of the Listen procedure indicates the number of connection that can be put in the queue before beign ingored.</p>
 
-&lt;p&gt;For all the procedures &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;fd&lt;/code&gt; indicates a file descriptor.&lt;/p&gt;
+<p>For all the procedures <code class="language-plaintext highlighter-rouge">fd</code> indicates a file descriptor.</p>
 
-&lt;p&gt;For the Socket procedure, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;domain&lt;/code&gt; indicates the address family, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;type&lt;/code&gt; the type of socket(TCP or UDP), and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;proto&lt;/code&gt; the underlaing protocol level IP.&lt;/p&gt;
+<p>For the Socket procedure, <code class="language-plaintext highlighter-rouge">domain</code> indicates the address family, <code class="language-plaintext highlighter-rouge">type</code> the type of socket(TCP or UDP), and <code class="language-plaintext highlighter-rouge">proto</code> the underlaing protocol level IP.</p>
 
-&lt;p&gt;Based on the platform you are using you can receive an error in case the size of the  &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;p&lt;/code&gt; parameter in  &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Write&lt;/code&gt; procedure is too big.&lt;/p&gt;
+<p>Based on the platform you are using you can receive an error in case the size of the  <code class="language-plaintext highlighter-rouge">p</code> parameter in  <code class="language-plaintext highlighter-rouge">Write</code> procedure is too big.</p>
 
-&lt;p&gt;To note that the TCP protocol is stream based, in this way there could not be an exact one to one corrispondence between the content of the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Write&lt;/code&gt; and of the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Read&lt;/code&gt; calls.&lt;/p&gt;
+<p>To note that the TCP protocol is stream based, in this way there could not be an exact one to one corrispondence between the content of the <code class="language-plaintext highlighter-rouge">Write</code> and of the <code class="language-plaintext highlighter-rouge">Read</code> calls.</p>
 
-&lt;h1 id=&quot;example-code&quot;&gt;Example code&lt;/h1&gt;
+<h1 id="example-code">Example code</h1>
 
-&lt;p&gt;Here some example code using the previous described syscalls to send an hello message from one socket to the other.&lt;/p&gt;
+<p>Here some example code using the previous described syscalls to send an hello message from one socket to the other.</p>
 
-&lt;h4 id=&quot;client&quot;&gt;Client&lt;/h4&gt;
+<h4 id="client">Client</h4>
 
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-golang&quot; data-lang=&quot;golang&quot;&gt;&lt;span class=&quot;n&quot;&gt;fd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;syscall&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Socket&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;syscall&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AF_INET&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;syscall&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;SOCK_STREAM&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;syscall&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;IPPROTO_IP&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;nil&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-	&lt;span class=&quot;nb&quot;&gt;panic&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;err&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+<figure class="highlight"><pre><code class="language-golang" data-lang="golang"><span class="n">fd</span><span class="p">,</span> <span class="n">err</span> <span class="o">:=</span> <span class="n">syscall</span><span class="o">.</span><span class="n">Socket</span><span class="p">(</span><span class="n">syscall</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">syscall</span><span class="o">.</span><span class="n">SOCK_STREAM</span><span class="p">,</span> <span class="n">syscall</span><span class="o">.</span><span class="n">IPPROTO_IP</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+	<span class="nb">panic</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+<span class="p">}</span>
 
-&lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;syscall&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Bind&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;fd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;syscall&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;SockaddrInet4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Port&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;8081&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Addr&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;byte&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;127&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}})&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;nil&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-	&lt;span class=&quot;nb&quot;&gt;panic&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;err&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+<span class="n">err</span> <span class="o">=</span> <span class="n">syscall</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">syscall</span><span class="o">.</span><span class="n">SockaddrInet4</span><span class="p">{</span><span class="n">Port</span><span class="o">:</span> <span class="m">8081</span><span class="p">,</span> <span class="n">Addr</span><span class="o">:</span> <span class="p">[</span><span class="m">4</span><span class="p">]</span><span class="kt">byte</span><span class="p">{</span><span class="m">127</span><span class="p">,</span> <span class="m">0</span><span class="p">,</span> <span class="m">0</span><span class="p">,</span> <span class="m">1</span><span class="p">}})</span>
+<span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+	<span class="nb">panic</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+<span class="p">}</span>
 
-&lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;syscall&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Connect&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;fd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;syscall&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;SockaddrInet4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Port&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;8080&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Addr&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;byte&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;127&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}})&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;nil&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-	&lt;span class=&quot;nb&quot;&gt;panic&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;err&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+<span class="n">err</span> <span class="o">=</span> <span class="n">syscall</span><span class="o">.</span><span class="n">Connect</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">syscall</span><span class="o">.</span><span class="n">SockaddrInet4</span><span class="p">{</span><span class="n">Port</span><span class="o">:</span> <span class="m">8080</span><span class="p">,</span> <span class="n">Addr</span><span class="o">:</span> <span class="p">[</span><span class="m">4</span><span class="p">]</span><span class="kt">byte</span><span class="p">{</span><span class="m">127</span><span class="p">,</span> <span class="m">0</span><span class="p">,</span> <span class="m">0</span><span class="p">,</span> <span class="m">1</span><span class="p">}})</span>
+<span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+	<span class="nb">panic</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+<span class="p">}</span>
 
-&lt;span class=&quot;n&quot;&gt;size&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;syscall&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Write&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;fd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[]&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;byte&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;hello &quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;nil&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-	&lt;span class=&quot;nb&quot;&gt;panic&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;err&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;println&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;written bytes: &quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;size&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+<span class="n">size</span><span class="p">,</span> <span class="n">err</span> <span class="o">:=</span> <span class="n">syscall</span><span class="o">.</span><span class="n">Write</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">(</span><span class="s">"hello "</span><span class="p">))</span>
+<span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+	<span class="nb">panic</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+<span class="p">}</span>
+<span class="nb">println</span><span class="p">(</span><span class="s">"written bytes: "</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span>
 
-&lt;span class=&quot;n&quot;&gt;size&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;syscall&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Write&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;fd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[]&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;byte&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;world!&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;nil&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-	&lt;span class=&quot;nb&quot;&gt;panic&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;err&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;println&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;written bytes: &quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;size&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+<span class="n">size</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">syscall</span><span class="o">.</span><span class="n">Write</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">(</span><span class="s">"world!"</span><span class="p">))</span>
+<span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+	<span class="nb">panic</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+<span class="p">}</span>
+<span class="nb">println</span><span class="p">(</span><span class="s">"written bytes: "</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span>
 
-&lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;syscall&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Close&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;fd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;nil&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-	&lt;span class=&quot;nb&quot;&gt;panic&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;err&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+<span class="n">err</span> <span class="o">=</span> <span class="n">syscall</span><span class="o">.</span><span class="n">Close</span><span class="p">(</span><span class="n">fd</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+	<span class="nb">panic</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+<span class="p">}</span></code></pre></figure>
 
-&lt;h4 id=&quot;server&quot;&gt;Server&lt;/h4&gt;
+<h4 id="server">Server</h4>
 
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-golang&quot; data-lang=&quot;golang&quot;&gt;&lt;span class=&quot;n&quot;&gt;fd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;syscall&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Socket&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;syscall&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AF_INET&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;syscall&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;SOCK_STREAM&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;syscall&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;IPPROTO_IP&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;nil&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-	&lt;span class=&quot;nb&quot;&gt;panic&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;err&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+<figure class="highlight"><pre><code class="language-golang" data-lang="golang"><span class="n">fd</span><span class="p">,</span> <span class="n">err</span> <span class="o">:=</span> <span class="n">syscall</span><span class="o">.</span><span class="n">Socket</span><span class="p">(</span><span class="n">syscall</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">syscall</span><span class="o">.</span><span class="n">SOCK_STREAM</span><span class="p">,</span> <span class="n">syscall</span><span class="o">.</span><span class="n">IPPROTO_IP</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+	<span class="nb">panic</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+<span class="p">}</span>
 
-&lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;syscall&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Bind&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;fd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;syscall&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;SockaddrInet4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Port&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;8080&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Addr&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;byte&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;127&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}})&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;nil&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-	&lt;span class=&quot;nb&quot;&gt;panic&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;err&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+<span class="n">err</span> <span class="o">=</span> <span class="n">syscall</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">syscall</span><span class="o">.</span><span class="n">SockaddrInet4</span><span class="p">{</span><span class="n">Port</span><span class="o">:</span> <span class="m">8080</span><span class="p">,</span> <span class="n">Addr</span><span class="o">:</span> <span class="p">[</span><span class="m">4</span><span class="p">]</span><span class="kt">byte</span><span class="p">{</span><span class="m">127</span><span class="p">,</span> <span class="m">0</span><span class="p">,</span> <span class="m">0</span><span class="p">,</span> <span class="m">1</span><span class="p">}})</span>
+<span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+	<span class="nb">panic</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+<span class="p">}</span>
 
-&lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;syscall&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Listen&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;fd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;nil&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-	&lt;span class=&quot;nb&quot;&gt;panic&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;err&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+<span class="n">err</span> <span class="o">=</span> <span class="n">syscall</span><span class="o">.</span><span class="n">Listen</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="m">1</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+	<span class="nb">panic</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+<span class="p">}</span>
 
-&lt;span class=&quot;n&quot;&gt;nfd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;_&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;syscall&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Accept&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;fd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;nil&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-	&lt;span class=&quot;nb&quot;&gt;panic&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;err&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+<span class="n">nfd</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">err</span> <span class="o">:=</span> <span class="n">syscall</span><span class="o">.</span><span class="n">Accept</span><span class="p">(</span><span class="n">fd</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+	<span class="nb">panic</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+<span class="p">}</span>
 
-&lt;span class=&quot;n&quot;&gt;buf&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;make&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;([]&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;byte&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;size&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:=&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;1&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;totSize&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:=&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;size&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-	&lt;span class=&quot;n&quot;&gt;size&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;syscall&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Read&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;nfd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;buf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-	&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;nil&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-		&lt;span class=&quot;nb&quot;&gt;panic&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;err&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-	&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+<span class="n">buf</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">([]</span><span class="kt">byte</span><span class="p">,</span> <span class="m">4</span><span class="p">)</span>
+<span class="n">size</span> <span class="o">:=</span> <span class="m">1</span>
+<span class="n">totSize</span> <span class="o">:=</span> <span class="m">0</span>
+<span class="k">for</span> <span class="n">size</span> <span class="o">&gt;</span> <span class="m">0</span> <span class="p">{</span>
+	<span class="n">size</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">syscall</span><span class="o">.</span><span class="n">Read</span><span class="p">(</span><span class="n">nfd</span><span class="p">,</span> <span class="n">buf</span><span class="p">)</span>
+	<span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+		<span class="nb">panic</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+	<span class="p">}</span>
 
-	&lt;span class=&quot;n&quot;&gt;fmt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Println&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;buf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;size&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]))&lt;/span&gt;
-	&lt;span class=&quot;n&quot;&gt;buf&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;make&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;([]&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;byte&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-	&lt;span class=&quot;n&quot;&gt;totSize&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;totSize&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;size&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+	<span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="kt">string</span><span class="p">(</span><span class="n">buf</span><span class="p">[</span><span class="m">0</span><span class="o">:</span><span class="n">size</span><span class="p">]))</span>
+	<span class="n">buf</span> <span class="o">=</span> <span class="nb">make</span><span class="p">([]</span><span class="kt">byte</span><span class="p">,</span> <span class="m">4</span><span class="p">)</span>
+	<span class="n">totSize</span> <span class="o">=</span> <span class="n">totSize</span> <span class="o">+</span> <span class="n">size</span>
+<span class="p">}</span>
 
-&lt;span class=&quot;n&quot;&gt;fmt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Println&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;fmt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Println&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Total size: &quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;totSize&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+<span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">()</span>
+<span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="s">"Total size: "</span><span class="p">,</span> <span class="n">totSize</span><span class="p">)</span>
 
-&lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;syscall&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Close&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;fd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;nil&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-	&lt;span class=&quot;nb&quot;&gt;panic&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;err&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+<span class="n">err</span> <span class="o">=</span> <span class="n">syscall</span><span class="o">.</span><span class="n">Close</span><span class="p">(</span><span class="n">fd</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+	<span class="nb">panic</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+<span class="p">}</span></code></pre></figure>
 
-&lt;h1 id=&quot;summary&quot;&gt;Summary&lt;/h1&gt;
+<h1 id="summary">Summary</h1>
 
-&lt;p&gt;We have seen how to send and receive data over TCP using directly system calls, using the methods of the go’s syscall package (that are implemented using the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;libc&lt;/code&gt; libraries of the OS provider).
+<p>We have seen how to send and receive data over TCP using directly system calls, using the methods of the go’s syscall package (that are implemented using the <code class="language-plaintext highlighter-rouge">libc</code> libraries).
 We have tried to give some more awareness in the use of the TCP stack.
-Hope you enjoied the article, if you want to either suggest some improvements or have an exhange please contact via &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;email&lt;/code&gt; or via my &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Twitter&lt;/code&gt; profile.&lt;/p&gt;
+Hope you enjoied the article, if you want to either suggest some improvements or have an exhange please contact via <code class="language-plaintext highlighter-rouge">email</code> or via my <code class="language-plaintext highlighter-rouge">Twitter</code> profile.</p>
 
-&lt;h4 id=&quot;references&quot;&gt;References&lt;/h4&gt;
-&lt;ul&gt;
-  &lt;li&gt;&lt;a href=&quot;https://developer.ibm.com/articles/au-tcpsystemcalls&quot;&gt;IBM TCP syscalls&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;</content><author><name></name></author><category term="jekyll" /><category term="update" /><category term="networking" /><category term="go" /><category term="programming" /><summary type="html">TCP</summary></entry></feed>
+<h4 id="references">References</h4>
+<ul>
+  <li><a href="https://developer.ibm.com/articles/au-tcpsystemcalls">IBM TCP syscalls</a></li>
+</ul>]]></content><author><name></name></author><category term="jekyll" /><category term="update" /><category term="networking" /><category term="go" /><category term="programming" /><summary type="html"><![CDATA[TCP]]></summary></entry></feed>

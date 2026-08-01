@@ -7,12 +7,13 @@ source "https://rubygems.org"
 #
 # This will help ensure the proper Jekyll version is running.
 # Happy Jekylling!
-#gem "jekyll", "~> 4.2.2"
+gem "jekyll", "~> 4.3.0"
 # This is the default theme for new Jekyll sites. You may change this to anything you like.
 gem "minima", "~> 2.5"
-# If you want to use GitHub Pages, remove the "gem "jekyll"" above and
-# uncomment the line below. To upgrade, run `bundle update github-pages`.
-gem "github-pages", "~> 225", group: :jekyll_plugins
+# NOTE: switched from "github-pages" gem to plain "jekyll" for local preview,
+# since github-pages requires Ruby < 4.0 and is incompatible with newer Ruby.
+# GitHub Pages will still build the site remotely using its own Jekyll version;
+# this only affects local `bundle exec jekyll serve` previews.
 # If you have any plugins, put them here!
 group :jekyll_plugins do
   gem "jekyll-feed", "~> 0.12"
@@ -33,3 +34,10 @@ gem "wdm", "~> 0.1.1", :platforms => [:mingw, :x64_mingw, :mswin]
 gem "http_parser.rb", "~> 0.6.0", :platforms => [:jruby]
 
 gem "webrick", "~> 1.7"
+
+# Ruby 3.4+ removed these from default gems; Jekyll and its dependencies still require them.
+gem "csv"
+gem "base64"
+gem "logger"
+gem "ostruct"
+gem "benchmark"

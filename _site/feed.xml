@@ -1,2 +1,132 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.4">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2026-08-01T10:52:04+02:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">Tollot’s Mountain Blog</title><subtitle>This blog want to be a collection of experiences in sport events and their way to them. I will also share experiences mountain hiking and all what i will consider approprieate regarding mountain sports and outdoor activities.  
-</subtitle></feed>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.4">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2026-08-01T11:12:16+02:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">Tollot’s Mountain Blog</title><subtitle>This blog want to be a collection of experiences in sport events and their way to them. I will also share experiences of mountain hiking and all what i will consider approprieate regarding mountain sports and outdoor activities.  
+</subtitle><entry><title type="html">Communicating over UDP with system calls in Go</title><link href="http://localhost:4000/jekyll/update/2024/01/04/UDP-syscalls.html" rel="alternate" type="text/html" title="Communicating over UDP with system calls in Go" /><published>2024-01-04T16:00:00+01:00</published><updated>2024-01-04T16:00:00+01:00</updated><id>http://localhost:4000/jekyll/update/2024/01/04/UDP-syscalls</id><content type="html" xml:base="http://localhost:4000/jekyll/update/2024/01/04/UDP-syscalls.html"><![CDATA[<h1 id="udp">UDP</h1>
+
+<p><code class="language-plaintext highlighter-rouge">User Datagram Protocol</code> (UDP) is the most used connectionless protocol over IP.
+Other than used directly, UDP is used to implement other network protocols such as in the field of audio-video streaming and VoIP.</p>
+
+<p>UDP does not implements retransmission of the lost packets. In this way the packets have less guarantees to be delivered in case of networks errors if compared to TCP.</p>
+
+<p>Packets are not properly sequenced, that means they could arrive in a different order respect to which they are sent.</p>
+
+<p>UDP is implemented at kernel level in the OS and is used by the networking libraries through a serie of system calls, these system calls can be implemented in other languages like C so that the networking libraries of the different languages of reference has not to implement them themselves at low level. Typically these implementation are inside the <code class="language-plaintext highlighter-rouge">libc</code> libraries.</p>
+
+<p>The main syscalls for using UDP are:</p>
+
+<ul>
+  <li>Socket</li>
+  <li>Bind</li>
+  <li>Sendto</li>
+  <li>Recvfrom</li>
+  <li>Close</li>
+</ul>
+
+<h4 id="socket">Socket</h4>
+
+<p>Create a new socket used in subsequent system calls.
+In the kernel level is created a <code class="language-plaintext highlighter-rouge">Protocol Control Block</code> (PCB) that will contain all the informations about the current connection.
+This is done through two calls, one for the allocation of the new PCB and one for its initialization.</p>
+
+<h4 id="bind">Bind</h4>
+
+<p>Bind a socket with a local transport network address, that is address and port.
+The port can also be not defined, in that case an implicit lookup will be tried by the system.
+In case the port is already in use in the system by onehter socket, the bind will fail.</p>
+
+<h4 id="sendto">Sendto</h4>
+
+<p>Send an UDP datagram from the socket address and port to the destination socket.
+Successful completion of a call does not guarantee delivery of the message. A return value of -1 indicates only locally-detected errors.
+If space is not available at the sending socket to hold the message to be transmitted it could block until space is available.</p>
+
+<h4 id="recvfrom">Recvfrom</h4>
+
+<p>Put the process in sleep until the kernel wake it up with a received UDP datagram along with the address of the UDP datagram sender.</p>
+
+<h4 id="close">Close</h4>
+
+<p>Free the local socket.</p>
+
+<h1 id="syscalls-in-go">Syscalls in GO</h1>
+
+<p>The syscall package provides a mean to interact with the underlying operating system directly.
+However, it is essential to note that the syscall package is platform-specific, and some functions might not be available or behave differently across different platforms.</p>
+
+<p>For what regards at least the UDP calls, they are implemented in the syscall package under the hood with the use of the libc libraries.
+<code class="language-plaintext highlighter-rouge">libc</code> is responsible for the mechanism of system calls to the OS implemented in low level code.</p>
+
+<p>For our purposes we will use the procedures:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">func syscall.Socket(domain int, typ int, proto int) (fd int, err error)</code></li>
+  <li><code class="language-plaintext highlighter-rouge">func syscall.Bind(fd int, sa syscall.Sockaddr) (err error)</code></li>
+  <li><code class="language-plaintext highlighter-rouge">func syscall.Sendto(fd int, p []byte, flags int, to syscall.Sockaddr) (err error)</code></li>
+  <li><code class="language-plaintext highlighter-rouge">func syscall.Recvfrom(fd int, p []byte, flags int) (n int, from syscall.Sockaddr, err error)</code></li>
+  <li><code class="language-plaintext highlighter-rouge">func syscall.Close(fd int) (err error)</code></li>
+</ul>
+
+<p>For all the procedures <code class="language-plaintext highlighter-rouge">fd</code> indicates a file descriptor.</p>
+
+<p>For the Socket procedure, <code class="language-plaintext highlighter-rouge">domain</code> indicates the address family, <code class="language-plaintext highlighter-rouge">type</code> the type of socket(TCP or UDP), and <code class="language-plaintext highlighter-rouge">proto</code> the underlaing protocol level IP.</p>
+
+<h1 id="example-code">Example code</h1>
+
+<p>Here some example code using the previous described syscalls to send an hello message from one socket to the other.</p>
+
+<h4 id="client">Client</h4>
+
+<figure class="highlight"><pre><code class="language-golang" data-lang="golang"><span class="n">fd</span><span class="p">,</span> <span class="n">err</span> <span class="o">:=</span> <span class="n">syscall</span><span class="o">.</span><span class="n">Socket</span><span class="p">(</span><span class="n">syscall</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">syscall</span><span class="o">.</span><span class="n">SOCK_DGRAM</span><span class="p">,</span> <span class="n">syscall</span><span class="o">.</span><span class="n">IPPROTO_IP</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+<span class="nb">panic</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="n">err</span> <span class="o">=</span> <span class="n">syscall</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">syscall</span><span class="o">.</span><span class="n">SockaddrInet4</span><span class="p">{</span><span class="n">Port</span><span class="o">:</span> <span class="m">8081</span><span class="p">,</span> <span class="n">Addr</span><span class="o">:</span> <span class="p">[</span><span class="m">4</span><span class="p">]</span><span class="kt">byte</span><span class="p">{</span><span class="m">127</span><span class="p">,</span> <span class="m">0</span><span class="p">,</span> <span class="m">0</span><span class="p">,</span> <span class="m">1</span><span class="p">}})</span>
+<span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+<span class="nb">panic</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="n">err</span> <span class="o">=</span> <span class="n">syscall</span><span class="o">.</span><span class="n">Sendto</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">(</span><span class="s">"hello world!"</span><span class="p">),</span> <span class="m">0</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">syscall</span><span class="o">.</span><span class="n">SockaddrInet4</span><span class="p">{</span><span class="n">Port</span><span class="o">:</span> <span class="m">8080</span><span class="p">,</span> <span class="n">Addr</span><span class="o">:</span> <span class="p">[</span><span class="m">4</span><span class="p">]</span><span class="kt">byte</span><span class="p">{</span><span class="m">127</span><span class="p">,</span> <span class="m">0</span><span class="p">,</span> <span class="m">0</span><span class="p">,</span> <span class="m">1</span><span class="p">}})</span>
+<span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+<span class="nb">panic</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="n">err</span> <span class="o">=</span> <span class="n">syscall</span><span class="o">.</span><span class="n">Close</span><span class="p">(</span><span class="n">fd</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+<span class="nb">panic</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+<span class="p">}</span></code></pre></figure>
+
+<h4 id="server">Server</h4>
+
+<figure class="highlight"><pre><code class="language-golang" data-lang="golang"><span class="n">fd</span><span class="p">,</span> <span class="n">err</span> <span class="o">:=</span> <span class="n">syscall</span><span class="o">.</span><span class="n">Socket</span><span class="p">(</span><span class="n">syscall</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">syscall</span><span class="o">.</span><span class="n">SOCK_DGRAM</span><span class="p">,</span> <span class="n">syscall</span><span class="o">.</span><span class="n">IPPROTO_IP</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+<span class="nb">panic</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="n">err</span> <span class="o">=</span> <span class="n">syscall</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">syscall</span><span class="o">.</span><span class="n">SockaddrInet4</span><span class="p">{</span><span class="n">Port</span><span class="o">:</span> <span class="m">8080</span><span class="p">,</span> <span class="n">Addr</span><span class="o">:</span> <span class="p">[</span><span class="m">4</span><span class="p">]</span><span class="kt">byte</span><span class="p">{</span><span class="m">127</span><span class="p">,</span> <span class="m">0</span><span class="p">,</span> <span class="m">0</span><span class="p">,</span> <span class="m">1</span><span class="p">}})</span>
+<span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+<span class="nb">panic</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="n">msg</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">([]</span><span class="kt">byte</span><span class="p">,</span> <span class="m">1024</span><span class="p">)</span>
+<span class="n">size</span><span class="p">,</span> <span class="n">from</span><span class="p">,</span> <span class="n">err</span> <span class="o">:=</span> <span class="n">syscall</span><span class="o">.</span><span class="n">Recvfrom</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="m">0</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+<span class="nb">panic</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="n">fmt</span><span class="o">.</span><span class="n">Printf</span><span class="p">(</span><span class="s">"size: %d, from: %v, err: %v</span><span class="se">\n</span><span class="s">msg: %s</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">from</span><span class="p">,</span> <span class="n">err</span><span class="p">,</span> <span class="kt">string</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="m">0</span><span class="o">:</span><span class="n">size</span><span class="p">]))</span>
+
+<span class="n">err</span> <span class="o">=</span> <span class="n">syscall</span><span class="o">.</span><span class="n">Close</span><span class="p">(</span><span class="n">fd</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+<span class="nb">panic</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+<span class="p">}</span></code></pre></figure>
+
+<h1 id="summary">Summary</h1>
+
+<p>We have seen how to send and receive data over UDP using directly system calls, using the methods of the go’s syscall package (that are implemented using the <code class="language-plaintext highlighter-rouge">libc</code> libraries).
+We have tried to give some more awareness in the use of the UDP stack.
+Hope you enjoied the article, if you want to either suggest some improvements or have an exhange please contact via <code class="language-plaintext highlighter-rouge">email</code> or via my <code class="language-plaintext highlighter-rouge">Twitter</code> profile.</p>
+
+<h4 id="references">References</h4>
+
+<ul>
+  <li><a href="https://jameshfisher.com/2016/12/19/simple-udp-server">jameshfisher simple udp server</a></li>
+</ul>]]></content><author><name></name></author><category term="jekyll" /><category term="update" /><category term="networking" /><category term="go" /><category term="programming" /><summary type="html"><![CDATA[UDP]]></summary></entry></feed>

@@ -1,14 +1,13 @@
 # Site settings
-title: Tollot's Blog
+title: Tollot's Mountain Blog
 email: ptollot@icloud.com
 description: > # this means to ignore newlines until "baseurl:"
-  This blog want to be a collection of what i have learned  both working as a software developer and developing
-  my side projects. I will write about backend software development, and in particular about distributed systems and formal methods.  
+  This blog want to be a collection of experiences in sport events and their way to them. I will also share experiences
+  mountain hiking and all what i will consider approprieate regarding mountain sports and outdoor activities.  
 baseurl: "" # the subpath of your site, e.g. /blog/
 url: "https://carpino.github.io" # the base hostname & protocol for your site
-twitter_username: ptollot
-github_username:  carpino
-linkedin_username:  pietro-tollot-32b9b320b
+instagram: "@pietrotollot"
+substack: "@pinottos"
 
 # Build settings
 markdown: kramdown

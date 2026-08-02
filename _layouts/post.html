@@ -53,7 +53,7 @@ layout: default
 
   {% if site.instagram or site.substack %}
   <div class="post-follow">
-    <p class="post-follow-heading">Follow me on:</p>
+    <p class="post-subscribe-heading"><strong>Follow me on</strong></p>
     <ul class="post-follow-list">
       {% if site.instagram %}
       <li>
@@ -72,6 +72,15 @@ layout: default
       </li>
       {% endif %}
     </ul>
+  </div>
+  {% endif %}
+
+  {% if site.substack %}
+  <div class="post-subscribe">
+    <p class="post-subscribe-heading"><strong>Subscribe to the mailing list to receive any news about this blog</strong></p>
+    <iframe src="https://{{ site.substack | remove: '@' }}.substack.com/embed"
+            class="post-subscribe-embed"
+            frameborder="0" scrolling="no"></iframe>
   </div>
   {% endif %}
 

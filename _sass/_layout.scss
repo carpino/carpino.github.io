@@ -310,6 +310,22 @@
     }
 }
 
+.post-subscribe {
+    margin-top: $spacing-unit / 2;
+
+    .post-subscribe-heading {
+        @extend .post-follow-heading;
+    }
+
+    .post-subscribe-embed {
+        width: 100%;
+        max-width: 480px;
+        height: 150px;
+        border: 1px solid $grey-color-light;
+        background: white;
+    }
+}
+
 .post-content {
     margin-bottom: $spacing-unit;
 

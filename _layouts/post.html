@@ -51,6 +51,30 @@ layout: default
     <span class="like-count">0</span> <span class="like-label">likes</span>
   </div>
 
+  {% if site.instagram or site.substack %}
+  <div class="post-follow">
+    <p class="post-follow-heading">Follow me on:</p>
+    <ul class="post-follow-list">
+      {% if site.instagram %}
+      <li>
+        <a href="https://www.instagram.com/{{ site.instagram | remove: '@' }}">
+          <i class="icon fab fa-instagram"></i>
+          <span class="username">Instagram</span>
+        </a>
+      </li>
+      {% endif %}
+      {% if site.substack %}
+      <li>
+        <a href="https://{{ site.substack | remove: '@' }}.substack.com">
+          <i class="icon fas fa-newspaper"></i>
+          <span class="username">Substack</span>
+        </a>
+      </li>
+      {% endif %}
+    </ul>
+  </div>
+  {% endif %}
+
 </div>
 
 <script>

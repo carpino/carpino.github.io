@@ -273,6 +273,43 @@
     }
 }
 
+.post-comments {
+    margin-top: $spacing-unit;
+    padding-top: $spacing-unit;
+    border-top: 1px solid $grey-color-light;
+}
+
+.post-follow {
+    margin-top: $spacing-unit;
+    padding-top: $spacing-unit;
+    border-top: 1px solid $grey-color-light;
+
+    .post-follow-heading {
+        font-weight: bold;
+        margin-bottom: $spacing-unit / 3;
+    }
+
+    .post-follow-list {
+        margin-left: 0;
+        list-style: none;
+        display: flex;
+        gap: $spacing-unit / 2;
+
+        li {
+            margin-bottom: 0;
+        }
+
+        a {
+            display: inline-flex;
+            align-items: center;
+
+            .icon {
+                margin-right: 6px;
+            }
+        }
+    }
+}
+
 .post-content {
     margin-bottom: $spacing-unit;
 

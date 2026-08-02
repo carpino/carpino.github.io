@@ -8,24 +8,6 @@
       <div class="footer-col  footer-col-1">
         <ul class="contact-list">
           <li>&copy; Pietro Tollot</li>
-
-          {% if site.instagram %}
-          <li>
-            <a href="https://www.instagram.com/{{ site.instagram | remove: '@' }}">
-              <i class="icon fab fa-instagram"></i>
-              <span class="username">{{ site.instagram }}</span>
-            </a>
-          </li>
-          {% endif %}
-
-          {% if site.substack %}
-          <li>
-            <a href="https://{{ site.substack | remove: '@' }}.substack.com">
-              <i class="icon fas fa-newspaper"></i>
-              <span class="username">{{ site.substack }}</span>
-            </a>
-          </li>
-          {% endif %}
         </ul>
       </div>
 

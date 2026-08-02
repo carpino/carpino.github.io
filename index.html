@@ -8,11 +8,15 @@ layout: default
 
   <ul class="post-list">
     {% for post in site.posts %}
-      <li>
+      <li{% unless forloop.first %} class="post-list-more" style="display: none;"{% endunless %}>
         {% capture read_time %}
           {{ post.content | number_of_words | divided_by: 180 }}
         {% endcapture %}
+        {% assign like_key = post.id | slugify: 'latin' | truncate: 64, '' %}
         <span class="post-meta">{{ post.date | date: "%b %-d, %Y" }}</span>
+        <span class="post-meta post-likes" data-like-key="{{ like_key }}">
+          &nbsp;&nbsp;<i class="far fa-heart"></i> <span class="like-count">&ndash;</span>
+        </span>
         {% if post.baeldung == null and post.rockthejvm == null %}
         <span class="post-meta">
           &nbsp;&nbsp;
@@ -65,4 +69,45 @@ layout: default
     {% endfor %}
   </ul>
 
+  {% if site.posts.size > 1 %}
+  <button id="load-more-posts" class="load-more-btn">Show more</button>
+  {% endif %}
+
 </div>
+
+<script>
+  (function () {
+    var button = document.getElementById('load-more-posts');
+    if (!button) return;
+    var hiddenPosts = document.querySelectorAll('.post-list-more');
+
+    var postsPerClick = 5;
+
+    button.addEventListener('click', function () {
+      var revealed = 0;
+      for (var i = 0; i < hiddenPosts.length && revealed < postsPerClick; i++) {
+        if (hiddenPosts[i].style.display === 'none') {
+          hiddenPosts[i].style.display = '';
+          revealed++;
+        }
+      }
+      var stillHidden = document.querySelectorAll('.post-list-more[style*="display: none"]');
+      if (stillHidden.length === 0) {
+        button.style.display = 'none';
+      }
+    });
+  })();
+
+  (function () {
+    var likeEls = document.querySelectorAll('.post-likes[data-like-key]');
+    for (var i = 0; i < likeEls.length; i++) {
+      (function (el) {
+        var key = el.getAttribute('data-like-key');
+        var countEl = el.querySelector('.like-count');
+        window.BlogLikes.getCount(key).then(function (count) {
+          countEl.textContent = count;
+        });
+      })(likeEls[i]);
+    }
+  })();
+</script>

@@ -7,7 +7,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
     <title>Tollot Mountain Blog</title>
-    <meta name="description" content="This blog is a collection of my sportive and outdoor experiences. I will also be sharing my training  for them. You can also find articles on mountain hiking or other related activities.  
+    <meta name="description" content="This blog will be a collection of my sportive and outdoor experiences. I will also be sharing my training  for them. You can also find articles on mountain hiking or other related activities.  
 ">
 
     <link rel="stylesheet" href="/css/main.css">
@@ -61,6 +61,61 @@
 
 </header>
 
+    <script>
+  window.BlogLikes = (function () {
+    var NAMESPACE = 'carpino-github-io';
+    var BASE = 'https://abacus.jasoncameron.dev';
+    var STORAGE_KEY = 'liked-posts';
+
+    function getLikedSet() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function hasLiked(key) {
+      var liked = getLikedSet();
+      for (var i = 0; i < liked.length; i++) {
+        if (liked[i] === key) return true;
+      }
+      return false;
+    }
+
+    function markLiked(key) {
+      var liked = getLikedSet();
+      if (!hasLiked(key)) {
+        liked.push(key);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(liked));
+      }
+    }
+
+    function getCount(key) {
+      return fetch(BASE + '/get/' + NAMESPACE + '/' + key)
+        .then(function (res) { return res.ok ? res.json() : { value: 0 }; })
+        .then(function (data) { return data.value || 0; })
+        .catch(function () { return 0; });
+    }
+
+    function addLike(key) {
+      return fetch(BASE + '/hit/' + NAMESPACE + '/' + key)
+        .then(function (res) {
+          if (!res.ok) throw new Error('Abacus request failed: ' + res.status);
+          return res.json();
+        })
+        .then(function (data) { return data.value || 0; });
+    }
+
+    return {
+      hasLiked: hasLiked,
+      markLiked: markLiked,
+      getCount: getCount,
+      addLike: addLike
+    };
+  })();
+</script>
+
 
     <div class="page-content">
       <div class="wrapper">
@@ -72,7 +127,48 @@
     
       <li>
         
+        
         <span class="post-meta">Jan 4, 2024</span>
+        <span class="post-meta post-likes" data-like-key="jekyll-update-2024-01-04-udp-syscalls-copia">
+          &nbsp;&nbsp;<i class="far fa-heart"></i> <span class="like-count">&ndash;</span>
+        </span>
+        
+        <span class="post-meta">
+          &nbsp;&nbsp;
+          <i class="far fa-clock"></i>
+          
+            
+          6
+        
+           min. to read
+        </span>
+        
+        <h2>
+          
+          
+          <a class="post-link" href="/jekyll/update/2024/01/04/UDP-syscalls-copia.html">
+            
+            Communicating over UDP with system calls in Go
+          </a>
+          
+        </h2>
+        
+        <article class="post-content">
+            We will see how to send and receive data over UDP using directly system calls, using the methods of the go's syscall package, that are implemented using the libc libraries...
+            
+            <a href="/jekyll/update/2024/01/04/UDP-syscalls-copia.html">[continue...]</a>
+            
+        </article>
+        
+      </li>
+    
+      <li class="post-list-more" style="display: none;">
+        
+        
+        <span class="post-meta">Jan 4, 2024</span>
+        <span class="post-meta post-likes" data-like-key="jekyll-update-2024-01-04-udp-syscalls">
+          &nbsp;&nbsp;<i class="far fa-heart"></i> <span class="like-count">&ndash;</span>
+        </span>
         
         <span class="post-meta">
           &nbsp;&nbsp;
@@ -105,7 +201,48 @@
     
   </ul>
 
+  
+  <button id="load-more-posts" class="load-more-btn">Show more</button>
+  
+
 </div>
+
+<script>
+  (function () {
+    var button = document.getElementById('load-more-posts');
+    if (!button) return;
+    var hiddenPosts = document.querySelectorAll('.post-list-more');
+
+    var postsPerClick = 5;
+
+    button.addEventListener('click', function () {
+      var revealed = 0;
+      for (var i = 0; i < hiddenPosts.length && revealed < postsPerClick; i++) {
+        if (hiddenPosts[i].style.display === 'none') {
+          hiddenPosts[i].style.display = '';
+          revealed++;
+        }
+      }
+      var stillHidden = document.querySelectorAll('.post-list-more[style*="display: none"]');
+      if (stillHidden.length === 0) {
+        button.style.display = 'none';
+      }
+    });
+  })();
+
+  (function () {
+    var likeEls = document.querySelectorAll('.post-likes[data-like-key]');
+    for (var i = 0; i < likeEls.length; i++) {
+      (function (el) {
+        var key = el.getAttribute('data-like-key');
+        var countEl = el.querySelector('.like-count');
+        window.BlogLikes.getCount(key).then(function (count) {
+          countEl.textContent = count;
+        });
+      })(likeEls[i]);
+    }
+  })();
+</script>
 
       </div>
     </div>
@@ -152,7 +289,7 @@
       </div>
 
       <div class="footer-col  footer-col-3">
-        <p class="text">This blog is a collection of my sportive and outdoor experiences. I will also be sharing my training  for them. You can also find articles on mountain hiking or other related activities.  
+        <p class="text">This blog will be a collection of my sportive and outdoor experiences. I will also be sharing my training  for them. You can also find articles on mountain hiking or other related activities.  
 </p>
       </div>
     </div>

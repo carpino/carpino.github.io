@@ -1,6 +1,7 @@
 ---
 layout: default
 ---
+{% assign like_key = page.id | slugify: 'latin' | truncate: 64, '' %}
 <div class="post">
   <script type="text/javascript" async
           src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS_SVG">
@@ -32,8 +33,68 @@ layout: default
     </p>
   </header>
 
+  <div class="like-widget" data-like-key="{{ like_key }}">
+    <button type="button" class="like-button" aria-label="Like this post">
+      <i class="far fa-heart"></i>
+    </button>
+    <span class="like-count">0</span> <span class="like-label">likes</span>
+  </div>
+
   <article class="post-content">
     {{ content }}
   </article>
 
+  <div class="like-widget" data-like-key="{{ like_key }}">
+    <button type="button" class="like-button" aria-label="Like this post">
+      <i class="far fa-heart"></i>
+    </button>
+    <span class="like-count">0</span> <span class="like-label">likes</span>
+  </div>
+
 </div>
+
+<script>
+  (function () {
+    var key = '{{ like_key }}';
+    var widgets = document.querySelectorAll('.like-widget[data-like-key="' + key + '"]');
+
+    function updateCount(count) {
+      for (var i = 0; i < widgets.length; i++) {
+        widgets[i].querySelector('.like-count').textContent = count;
+      }
+    }
+
+    function setLikedState() {
+      for (var i = 0; i < widgets.length; i++) {
+        var btn = widgets[i].querySelector('.like-button');
+        btn.classList.add('liked');
+        btn.disabled = true;
+        btn.querySelector('i').className = 'fas fa-heart';
+      }
+    }
+
+    window.BlogLikes.getCount(key).then(updateCount);
+
+    if (window.BlogLikes.hasLiked(key)) {
+      setLikedState();
+    }
+
+    for (var i = 0; i < widgets.length; i++) {
+      widgets[i].querySelector('.like-button').addEventListener('click', function () {
+        if (window.BlogLikes.hasLiked(key)) return;
+        for (var j = 0; j < widgets.length; j++) {
+          widgets[j].querySelector('.like-button').disabled = true;
+        }
+        window.BlogLikes.addLike(key).then(function (count) {
+          updateCount(count);
+          window.BlogLikes.markLiked(key);
+          setLikedState();
+        }).catch(function () {
+          for (var j = 0; j < widgets.length; j++) {
+            widgets[j].querySelector('.like-button').disabled = false;
+          }
+        });
+      });
+    }
+  })();
+</script>

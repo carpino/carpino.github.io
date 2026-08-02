@@ -188,6 +188,23 @@
     font-size: 24px;
 }
 
+.load-more-btn {
+    display: block;
+    margin: 0 auto $spacing-unit;
+    padding: 10px 24px;
+    font-size: $small-font-size;
+    font-family: $base-font-family;
+    color: $text-color;
+    background-color: $background-color;
+    border: 1px solid $grey-color-light;
+    border-radius: 5px;
+    cursor: pointer;
+
+    &:hover {
+        background-color: $grey-color-light;
+    }
+}
+
 
 
 /**
@@ -204,6 +221,55 @@
 
     @include media-query($on-laptop) {
         font-size: 36px;
+    }
+}
+
+.post-likes {
+    i {
+        color: #e0245e;
+    }
+}
+
+.like-widget {
+    display: flex;
+    align-items: center;
+    margin-bottom: $spacing-unit / 2;
+
+    .like-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        margin-right: 8px;
+        padding: 0;
+        background: none;
+        border: 1px solid $grey-color-light;
+        border-radius: 50%;
+        cursor: pointer;
+        color: #e0245e;
+        transition: background-color 0.15s ease-in-out;
+
+        &:hover:not(:disabled) {
+            background-color: lighten(#e0245e, 45%);
+        }
+
+        &:disabled {
+            cursor: default;
+        }
+
+        &.liked {
+            border-color: #e0245e;
+        }
+    }
+
+    .like-count {
+        font-weight: bold;
+    }
+
+    .like-label {
+        color: $grey-color;
+        margin-left: 4px;
     }
 }
 

@@ -7,7 +7,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
     <title>About</title>
-    <meta name="description" content="This blog is a collection of my sportive and outdoor experiences. I will also be sharing my training  for them. You can also find articles on mountain hiking or other related activities.  
+    <meta name="description" content="This blog will be a collection of my sportive and outdoor experiences. I will also be sharing my training  for them. You can also find articles on mountain hiking or other related activities.  
 ">
 
     <link rel="stylesheet" href="/css/main.css">
@@ -61,6 +61,61 @@
 
 </header>
 
+    <script>
+  window.BlogLikes = (function () {
+    var NAMESPACE = 'carpino-github-io';
+    var BASE = 'https://abacus.jasoncameron.dev';
+    var STORAGE_KEY = 'liked-posts';
+
+    function getLikedSet() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function hasLiked(key) {
+      var liked = getLikedSet();
+      for (var i = 0; i < liked.length; i++) {
+        if (liked[i] === key) return true;
+      }
+      return false;
+    }
+
+    function markLiked(key) {
+      var liked = getLikedSet();
+      if (!hasLiked(key)) {
+        liked.push(key);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(liked));
+      }
+    }
+
+    function getCount(key) {
+      return fetch(BASE + '/get/' + NAMESPACE + '/' + key)
+        .then(function (res) { return res.ok ? res.json() : { value: 0 }; })
+        .then(function (data) { return data.value || 0; })
+        .catch(function () { return 0; });
+    }
+
+    function addLike(key) {
+      return fetch(BASE + '/hit/' + NAMESPACE + '/' + key)
+        .then(function (res) {
+          if (!res.ok) throw new Error('Abacus request failed: ' + res.status);
+          return res.json();
+        })
+        .then(function (data) { return data.value || 0; });
+    }
+
+    return {
+      hasLiked: hasLiked,
+      markLiked: markLiked,
+      getCount: getCount,
+      addLike: addLike
+    };
+  })();
+</script>
+
 
     <div class="page-content">
       <div class="wrapper">
@@ -71,7 +126,7 @@
   </header>
 
   <article class="post-content">
-    <p>I am <strong>Pietro</strong>, a software developer by profession and an outdoor enthusiast in my free time. I was born in 1993 in a small village of the Dolomites in northern Italy, in the province of Belluno. Recently I have developed a passion for running and mountain sports, particularly mountain running. In 2026 I realised that sport will have a role in my future. My interests also include hiking and mountain trips.</p>
+    <p>I am <strong>Pietro</strong>, a software developer by profession and an outdoor enthusiast in my free time. I was born in 1993 in a small village of the Dolomites in northern Italy, in the province of Belluno. Recently I am developing a passion for running and mountain sports, particularly I want to become a trail runner. In 2026 I realised that sport will have a role in my future. My interests also include hiking and mountain trips.</p>
 
   </article>
 
@@ -122,7 +177,7 @@
       </div>
 
       <div class="footer-col  footer-col-3">
-        <p class="text">This blog is a collection of my sportive and outdoor experiences. I will also be sharing my training  for them. You can also find articles on mountain hiking or other related activities.  
+        <p class="text">This blog will be a collection of my sportive and outdoor experiences. I will also be sharing my training  for them. You can also find articles on mountain hiking or other related activities.  
 </p>
       </div>
     </div>

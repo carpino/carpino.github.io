@@ -1,0 +1,54 @@
+<script>
+  window.BlogLikes = (function () {
+    var NAMESPACE = 'carpino-github-io';
+    var BASE = 'https://abacus.jasoncameron.dev';
+    var STORAGE_KEY = 'liked-posts';
+
+    function getLikedSet() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function hasLiked(key) {
+      var liked = getLikedSet();
+      for (var i = 0; i < liked.length; i++) {
+        if (liked[i] === key) return true;
+      }
+      return false;
+    }
+
+    function markLiked(key) {
+      var liked = getLikedSet();
+      if (!hasLiked(key)) {
+        liked.push(key);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(liked));
+      }
+    }
+
+    function getCount(key) {
+      return fetch(BASE + '/get/' + NAMESPACE + '/' + key)
+        .then(function (res) { return res.ok ? res.json() : { value: 0 }; })
+        .then(function (data) { return data.value || 0; })
+        .catch(function () { return 0; });
+    }
+
+    function addLike(key) {
+      return fetch(BASE + '/hit/' + NAMESPACE + '/' + key)
+        .then(function (res) {
+          if (!res.ok) throw new Error('Abacus request failed: ' + res.status);
+          return res.json();
+        })
+        .then(function (data) { return data.value || 0; });
+    }
+
+    return {
+      hasLiked: hasLiked,
+      markLiked: markLiked,
+      getCount: getCount,
+      addLike: addLike
+    };
+  })();
+</script>

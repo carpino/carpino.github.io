@@ -14,10 +14,12 @@ prova
 
 ![Santa Croce](/assets/images/santa_croce.JPEG)
 
-![Giro Cadola](/assets/images/giro+cadola.png)
+![Giro Cadola](/assets/images/giro_lago.png)
 
 ![2x Giro Cadola](/assets/images/2xgiro+cadola.png)
 
-![Rulli](/assets/images/rulli.jpg)
+![Rulli](/assets/images/kikrCore2.jpg)
 
 ![Triban 500](/assets/images/triban500.jpg)
+
+![Planimetria cicloturistica Jesolo](/assets/images/cicloturistica_jesolo_planimetria.jpg)

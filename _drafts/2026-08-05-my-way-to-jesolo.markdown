@@ -12,6 +12,10 @@ summary: Training for Cicloturistica della Citta di Jesolo 2026. New gears, star
 
 prova
 
-![Rulli](/assets/images/kikrCore2.jpg)
-
 ![Triban 500](/assets/images/triban500.jpg)
+
+![Rulli](/assets/images/kickrCore2.jpg)
+
+![Febbraio indoor](/assets/images/febbraio_indoor.png)
+
+![Maggio indoor](/assets/images/maggio_indoor.png)

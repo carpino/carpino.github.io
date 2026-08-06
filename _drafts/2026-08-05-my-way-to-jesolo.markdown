@@ -22,9 +22,9 @@ According to professor Paul Raymond Gilbert, the founder of Compassion Focused T
 
 ![Three emotions system](/assets/images/3emotions.jpg)
 
-The green system is when we feel calm and reassured, our life is full of the warmth of true connections and we are safe. The blue one is the dopaminergic system, when we feel excited and motivated. The red one is when we feel not safe. When those systems are not balanced they can create a psicopathology.
+The green system is when we feel calm and reassured, our life is full of the warmth of true connections and we are safe, we are not looking for anything, we are happy with what we have (endogenous Opioids). The blue one is the dopaminergic system, when we feel excited and motivated, is looking for gratifications: status, aims, trying and succeeding in achieving the desired sportive performance (Dopamine). The red one looks for hazards and react to them, activated when we feel not safe (Cortisol). When those systems are not balanced they can create a psicopathology.
 
-In these years I was living in the red one, I missed almost completely the emotions and states of the blu system.
+In these years I was living in the red one, I missed almost completely the emotions and states of the blu and green systems.
 
 Then in February 2026 something changed.
 
@@ -36,7 +36,7 @@ I started to look at cyclism as a way to explore nature and places, mountain pas
 
 Cyclism also has a low impact on articulations compared to other cardio sport and is more easy to practice compared to running, at least with small distancing and without climbings. Cyclistic performances can also be measured and so data can be collected are usefull for comparison with ourselves.
 
-I had this idea when i started, to bike over the same places over and over again and try each time to do a personal best. I was seking that thrill of a good performance without having any bad impact on any living being.
+I had this idea when i started, to bike over the same places over and over again and try each time to do a personal best. I was seking that thrill of achieving a good performance without having any bad impact on any living being, the blue system !
 
 And I remembered the calm and relaxation after the sportive performance, indipendently from the performance, due to endogenous opioids, the green system !
 

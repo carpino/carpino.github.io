@@ -10,7 +10,7 @@ tags:
 summary: Training for Cicloturistica della Citta di Jesolo 2026. New gears, start to exercise again with a target race....
 ---
 
-# Near The End
+# In the middle of my life
 
 At the time of writing this post I am 33 and I can say that I have not been very sportive in my life. I my early 20s I practiced some activities like climbing (bouldering) and rowing or had some short runs and weight lifting from time to time. In my early 20s I weighed around 78kg but all changed in 2019 when I was diagnosed with depression.
 
